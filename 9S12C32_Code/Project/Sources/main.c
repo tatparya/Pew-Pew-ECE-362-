@@ -1,10 +1,27 @@
 #include <hidef.h>      /* common defines and macros */
 #include "derivative.h"      /* derivative-specific definitions */
 
+/* Game oriented definitions */
 #define NO_TARGETS 6
 #define NO_PLAYER 0
 #define PLAYER_A  1
 #define PLAYER_B  2
+
+/* ASCII character definitions */
+#define CR 0x0D	// ASCII return character   
+
+/* LCD COMMUNICATION BIT MASKS */
+#define RS 0x04		// RS pin mask (PTT[2])
+#define RW 0x08		// R/W pin mask (PTT[3])
+#define LCDCLK 0x10	// LCD EN/CLK pin mask (PTT[4])
+
+/* LCD INSTRUCTION CHARACTERS */
+#define LCDON 0x0F	// LCD initialization command
+#define LCDCLR 0x01	// LCD clear display command
+#define TWOLINE 0x38// LCD 2-line enable command
+#define CURMOV 0xFE	// LCD cursor move instruction
+#define LINE1  0x80	// LCD line 1 cursor position
+#define LINE2  0xC0	// LCD line 2 cursor position
 
 void initializations(void);
   void targetInit(Target *myTarget, unsigned char targetMaxScore);
@@ -101,11 +118,13 @@ void setPlayer(int targetNumber)
   // assign target to player who has been allocated fewer shots
   if(player_a_allocated < player_b_allocated) 
   {
-    target[targetNumber].player = PLAYER_A;
+    activateTarget(targetNumber, PLAYER_A);    
+    player_a_allocated += target[targetNumber].maxScore;
   }
   else
   {
-    target[targetNumber].player = PLAYER_B;
+    activateTarget(targetNumber, PLAYER_B);
+    player_b_allocated += target[targetNumber].maxScore;
   }
 }
 

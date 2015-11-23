@@ -8,6 +8,9 @@
 
 void initializations(void);
   void targetInit(Target *myTarget, unsigned char targetMaxScore);
+  void targetHit(int targetNumber);
+  void activateTarget(int targetNumber, unsigned char player);
+  void deactivateTarget(int targetNumber);
 // following are LCD functions
   void shiftout(char);
   void lcdwait(void);
@@ -21,6 +24,8 @@ void initializations(void);
   void stopGame(void);
 
 unsigned char gameRunning_flag; // true -> game is running
+unsigned int player_a_score;
+unsigned int player_b_score; 
 Target target[NO_TARGETS];
 
 void main(void) 
@@ -58,27 +63,74 @@ void initializations()
   
   // targetInit(Target *myTarget, unsigned char targetMaxScore)  
   targetInit( &(target[0]), 10 ); // target 1
-  targetInit( &(target[1]), 10 ); // target 2
+  targetInit( &(target[1]),  9 ); // target 2
   targetInit( &(target[2]),  7 ); // target 3
-  targetInit( &(target[3]),  7 ); // target 4
-  targetInit( &(target[4]),  4 ); // target 5
-  targetInit( &(target[5]),  4 ); // target 6
+  targetInit( &(target[3]),  5 ); // target 4
+  targetInit( &(target[4]),  3 ); // target 5
+  targetInit( &(target[5]),  3 ); // target 6
   
   // Variable initializations
   gameRunning_flag = 0;
 }
 
+
 /*
 ***********************************************************************
-  startGame: Starts the game by setting corresponding flags and carrying
-             out other relevant actions
+  deactivateTarget: To pick a target and set a player to it
+***********************************************************************
+*/
+void deactivateTarget(int targetNumber) 
+{
+  target[targetNumber].player = NO_PLAYER;
+  // @Kanishk : set LED display port OFF
+}
+
+/*
+***********************************************************************
+  activateTarget: To pick a target and set a player to it
+***********************************************************************
+*/
+void activateTarget(int targetNumber, unsigned char player) 
+{
+  target[targetNumber].player = player;
+  // @Kanishk : set LED display port ON
+}
+
+/*
+***********************************************************************
+  targetHit: Called when a target has been hit
+             The function will distribute score and reset to 0
+***********************************************************************
+*/
+void targetHit(int targetNumber)
+{    
+  if(target[targetNumber].player == PLAYER_A) 
+  {
+    player_a_score += target[targetNumber].score;     
+  } 
+  else if(target[targetNumber].player == PLAYER_B) 
+  {
+    player_b_score += target[targetNumber].score;      
+  }
+  
+  target[targetNumber].score = 0;    
+  // @Kanishk: decide if player should be reset here or not
+  //           if resetting, call deactivateTarget(targetNumber)  
+  // @Kanishk: Decide if want to flash color of player on port
+}                  
+
+
+/*
+***********************************************************************
+  targetInit: Initializes the target to a maxScore and sets current score
+              as 0 and sets player number to none
 ***********************************************************************
 */
 void targetInit(Target *myTarget, unsigned char targetMaxScore)
 {
   myTarget->maxScore = targetMaxScore;
   myTarget->score    = 0;
-  myTarget->player   = NO_PLAYER;
+  myTarget->player   = NO_PLAYER; // Defined above
 }                  
 
 
@@ -91,6 +143,8 @@ void targetInit(Target *myTarget, unsigned char targetMaxScore)
 void startGame(void) 
 {
   gameRunning_flag = 1;
+  player_a_score = 0;
+  player_b_score = 0;
 }
 
 /*

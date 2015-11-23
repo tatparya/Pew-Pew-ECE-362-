@@ -134,8 +134,16 @@ void oneSecondOver()
     } 
     else
     {
-      setPlayer(i);
-      target[i].time_asplayer = 5; // each target lasts 5 seconds
+      if(target[i].time_as_player <= 0)
+      {
+        setPlayer(i);
+        target[i].time_as_player = 5; // each target lasts 5 seconds
+      } 
+      else 
+      {
+        --target[i].time_as_player;
+      }
+      
     }
   }
   --gameTime;
@@ -173,9 +181,8 @@ void targetHit(int targetNumber)
     player_b_score += target[targetNumber].score;      
   }
   
-  target[targetNumber].score = 0;    
-  // @Kanishk: decide if player should be reset here or not
-  //           if resetting, call deactivateTarget(targetNumber)  
+  target[targetNumber].score = 0; 
+  deactivateTarget(targetNumber);     
   // @Kanishk: Decide if want to flash color of player on port
 }                  
 

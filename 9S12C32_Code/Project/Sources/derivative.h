@@ -13,4 +13,5 @@ typedef struct TargetData
   unsigned char score;
   unsigned char maxScore;
   unsigned char player;
+  unsigned char time_as_player;
 } Target;

@@ -8,25 +8,31 @@
 
 void initializations(void);
   void targetInit(Target *myTarget, unsigned char targetMaxScore);
-  void targetHit(int targetNumber);
-  void activateTarget(int targetNumber, unsigned char player);
-  void deactivateTarget(int targetNumber);
+void targetHit(int targetNumber);
+void activateTarget(int targetNumber, unsigned char player);
+void deactivateTarget(int targetNumber);
+void oneSecondOver(void);
+  void setPlayer(int targetNumber);
 // following are LCD functions
+void print_c(char);
+void pmsglcd(char str[]);
   void shiftout(char);
   void lcdwait(void);
   void send_byte(char);
   void send_i(char);
   void chgline(char);
-  void print_c(char);
-  void pmsglcd(char str[]);
 // for RTI initializations
-  void startGame(void);
+void startGame(void);
   void stopGame(void);
 
 unsigned char gameRunning_flag; // true -> game is running
 unsigned int player_a_score;
 unsigned int player_b_score; 
+unsigned int player_a_allocated;
+unsigned int player_b_allocated; 
 Target target[NO_TARGETS];
+
+unsigned int gameTime;
 
 void main(void) 
 {
@@ -87,6 +93,60 @@ void deactivateTarget(int targetNumber)
 
 /*
 ***********************************************************************
+  setPlayer: sets the player for a target that has no player assigned
+***********************************************************************
+*/
+void setPlayer(int targetNumber) 
+{
+  // assign target to player who has been allocated fewer shots
+  if(player_a_allocated < player_b_allocated) 
+  {
+    target[targetNumber].player = PLAYER_A;
+  }
+  else
+  {
+    target[targetNumber].player = PLAYER_B;
+  }
+}
+
+/*
+***********************************************************************
+  oneSecondOver: Called after every second gets over
+                 Reduces time in a target. 
+                 If target is for no player 
+                  then setPlayer for that target
+  
+  @Kanishk : This function does not set score                  
+***********************************************************************
+*/
+void oneSecondOver() 
+{
+  int i;
+  for(i = 0; i < NO_TARGETS; ++i)
+  {
+    if(target[i].player != NO_PLAYER) 
+    {
+      --target[i].time_as_player;
+      if(target[i].time_as_player <= 0) 
+      {    
+        deactivateTarget(i);
+      }             
+    } 
+    else
+    {
+      setPlayer(i);
+      target[i].time_asplayer = 5; // each target lasts 5 seconds
+    }
+  }
+  --gameTime;
+  if(gameTime == 0) 
+  {
+    stopGame();
+  }
+}
+
+/*
+***********************************************************************
   activateTarget: To pick a target and set a player to it
 ***********************************************************************
 */
@@ -128,9 +188,10 @@ void targetHit(int targetNumber)
 */
 void targetInit(Target *myTarget, unsigned char targetMaxScore)
 {
-  myTarget->maxScore = targetMaxScore;
-  myTarget->score    = 0;
-  myTarget->player   = NO_PLAYER; // Defined above
+  myTarget->maxScore       = targetMaxScore;
+  myTarget->score          = 0;  
+  myTarget->player         = NO_PLAYER; // Defined above
+  myTarget->time_as_player = 0;
 }                  
 
 
@@ -145,6 +206,9 @@ void startGame(void)
   gameRunning_flag = 1;
   player_a_score = 0;
   player_b_score = 0;
+  player_a_allocated = 0;
+  player_b_allocated = 0;
+  gameTime = 60; // 60 seconds
 }
 
 /*

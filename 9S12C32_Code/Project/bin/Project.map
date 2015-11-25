@@ -24,7 +24,7 @@ _startupData is allocated at 0xC031 and uses 6 Bytes
 extern struct _tagStartup {
   unsigned nofZeroOut     1
   _Range   pZeroOut       0x900     46
-  _Copy    *toCopyDownBeg 0xC1FD
+  _Copy    *toCopyDownBeg 0xC2A8
 } _startupData;
 
 *********************************************************************************************
@@ -33,8 +33,8 @@ Section Name                    Size  Type     From       To       Segment
 ---------------------------------------------------------------------------------------------
 .init                             49     R     0xC000     0xC030   ROM_C000
 .startData                        10     R     0xC031     0xC03A   ROM_C000
-.text                            450     R     0xC03B     0xC1FC   ROM_C000
-.copy                              2     R     0xC1FD     0xC1FE   ROM_C000
+.text                            621     R     0xC03B     0xC2A7   ROM_C000
+.copy                              2     R     0xC2A8     0xC2A9   ROM_C000
 .stack                           256   R/W      0x800      0x8FF   RAM
 .abs_section_8                     1   N/I        0x8        0x8   .absSeg0
 .abs_section_9                     1   N/I        0x9        0x9   .absSeg1
@@ -264,7 +264,7 @@ Section Name                    Size  Type     From       To       Segment
 .vectSeg223_vect                   2     R     0xFFFE     0xFFFF   .vectSeg223
 
 Summary of section sizes per section type:
-READ_ONLY (R):         205 (dec:      517)
+READ_ONLY (R):         2B0 (dec:      688)
 READ_WRITE (R/W):      12E (dec:      302)
 NO_INIT (N/I):         104 (dec:      260)
 
@@ -504,20 +504,24 @@ MODULE:                 -- mc9s12c32.c.o --
      _CANTXTSR                                  17E       2       2       0   .abs_section_17e
 MODULE:                 -- main.c.o --
 - PROCEDURES:
-     main                                      C03B      37      55       1   .text       
-     initializations                           C072      DD     221       1   .text       
-     targetInit                                C14F       B      11       6   .text       
-     startGame                                 C15A      19      25       1   .text       
-     stopGame                                  C173       4       4       1   .text       
-     shiftout                                  C177      14      20       1   .text       
-     lcdwait                                   C18B       D      13       2   .text       
-     send_byte                                 C198      11      17       1   .text       
-     send_i                                    C1A9       7       7       3   .text       
-     RTI_ISR                                   C1B0      1F      31       1   .text       
-     TIM_ISR                                   C1CF      2E      46       1   .text       
+     main                                      C03B      3C      60       1   .text       
+     initializations                           C077      DD     221       1   .text       
+     deactivateTarget                          C154       9       9       1   .text       
+     setPlayer                                 C15D      3D      61       1   .text       
+     oneSecondOver                             C19A      51      81       1   .text       
+     activateTarget                            C1EB       F      15       2   .text       
+     targetInit                                C1FA       B      11       6   .text       
+     startGame                                 C205      19      25       1   .text       
+     stopGame                                  C21E       4       4       1   .text       
+     shiftout                                  C222      14      20       1   .text       
+     lcdwait                                   C236       D      13       2   .text       
+     send_byte                                 C243      11      17       1   .text       
+     send_i                                    C254       7       7       3   .text       
+     RTI_ISR                                   C25B      1F      31       1   .text       
+     TIM_ISR                                   C27A      2E      46       1   .text       
 - VARIABLES:
      leftpb                                     900       1       1       3   .bss        
-     i                                          901       2       2       4   .bss        
+     counter                                    901       2       2       5   .bss        
      prevleft                                   903       2       2       2   .bss        
      tencnt                                     905       2       2       3   .bss        
      onecnt                                     907       2       2       3   .bss        
@@ -528,10 +532,10 @@ MODULE:                 -- main.c.o --
      gameRunning_flag                           90B       1       1       3   .common     
      player_a_score                             90C       2       2       1   .common     
      player_b_score                             90E       2       2       1   .common     
-     player_a_allocated                         910       2       2       1   .common     
-     player_b_allocated                         912       2       2       1   .common     
-     target                                     914      18      24       6   .common     
-     gameTime                                   92C       2       2       1   .common     
+     player_a_allocated                         910       2       2       4   .common     
+     player_b_allocated                         912       2       2       4   .common     
+     target                                     914      18      24      15   .common     
+     gameTime                                   92C       2       2       3   .common     
 MODULE:                 -- Start12.c.o --
 - PROCEDURES:
      Init                                      C000      29      41       1   .init       
@@ -546,7 +550,7 @@ MODULE STATISTIC
   Name                                      Data   Code  Const
 ---------------------------------------------------------------------------------------------
   mc9s12c32.c.o                              260      0      0
-  main.c.o                                    46    450      4
+  main.c.o                                    46    621      4
   Start12.c.o                                  0     49      0
   other                                      256     12      2
 
@@ -554,10 +558,11 @@ MODULE STATISTIC
 SECTION USE IN OBJECT-ALLOCATION SECTION
 ---------------------------------------------------------------------------------------------
 SECTION: ".text"
-  main initializations targetInit startGame stopGame shiftout lcdwait 
-  send_byte send_i RTI_ISR TIM_ISR 
+  main initializations deactivateTarget setPlayer oneSecondOver activateTarget 
+  targetInit startGame stopGame shiftout lcdwait send_byte send_i RTI_ISR 
+  TIM_ISR 
 SECTION: ".bss"
-  leftpb i prevleft tencnt onecnt tenths onesec 
+  leftpb counter prevleft tencnt onecnt tenths onesec 
 SECTION: ".init"
   Init _Startup 
 SECTION: ".abs_section_8"
@@ -1236,7 +1241,7 @@ OBJECT LIST SORTED BY ADDRESS
      _PERAD                                     274       1       1       0   .abs_section_274
      _PPSAD                                     275       1       1       0   .abs_section_275
      leftpb                                     900       1       1       3   .bss        
-     i                                          901       2       2       4   .bss        
+     counter                                    901       2       2       5   .bss        
      prevleft                                   903       2       2       2   .bss        
      tencnt                                     905       2       2       3   .bss        
      onecnt                                     907       2       2       3   .bss        
@@ -1245,23 +1250,27 @@ OBJECT LIST SORTED BY ADDRESS
      gameRunning_flag                           90B       1       1       3   .common     
      player_a_score                             90C       2       2       1   .common     
      player_b_score                             90E       2       2       1   .common     
-     player_a_allocated                         910       2       2       1   .common     
-     player_b_allocated                         912       2       2       1   .common     
-     target                                     914      18      24       6   .common     
-     gameTime                                   92C       2       2       1   .common     
+     player_a_allocated                         910       2       2       4   .common     
+     player_b_allocated                         912       2       2       4   .common     
+     target                                     914      18      24      15   .common     
+     gameTime                                   92C       2       2       3   .common     
      Init                                      C000      29      41       1   .init       
      _Startup                                  C029       8       8       0   .init       
-     main                                      C03B      37      55       1   .text       
-     initializations                           C072      DD     221       1   .text       
-     targetInit                                C14F       B      11       6   .text       
-     startGame                                 C15A      19      25       1   .text       
-     stopGame                                  C173       4       4       1   .text       
-     shiftout                                  C177      14      20       1   .text       
-     lcdwait                                   C18B       D      13       2   .text       
-     send_byte                                 C198      11      17       1   .text       
-     send_i                                    C1A9       7       7       3   .text       
-     RTI_ISR                                   C1B0      1F      31       1   .text       
-     TIM_ISR                                   C1CF      2E      46       1   .text       
+     main                                      C03B      3C      60       1   .text       
+     initializations                           C077      DD     221       1   .text       
+     deactivateTarget                          C154       9       9       1   .text       
+     setPlayer                                 C15D      3D      61       1   .text       
+     oneSecondOver                             C19A      51      81       1   .text       
+     activateTarget                            C1EB       F      15       2   .text       
+     targetInit                                C1FA       B      11       6   .text       
+     startGame                                 C205      19      25       1   .text       
+     stopGame                                  C21E       4       4       1   .text       
+     shiftout                                  C222      14      20       1   .text       
+     lcdwait                                   C236       D      13       2   .text       
+     send_byte                                 C243      11      17       1   .text       
+     send_i                                    C254       7       7       3   .text       
+     RTI_ISR                                   C25B      1F      31       1   .text       
+     TIM_ISR                                   C27A      2E      46       1   .text       
      _Vector_15                                FFE0       2       2       0   .abs_section_ffe0
      _Vector_7                                 FFF0       2       2       0   .abs_section_fff0
 
@@ -1270,13 +1279,12 @@ UNUSED-OBJECTS SECTION
 ---------------------------------------------------------------------------------------------
 NOT USED PROCEDURES
 main.c.o:
-  deactivateTarget setPlayer oneSecondOver activateTarget targetHit chgline 
-  print_c pmsglcd inchar outchar 
+  targetHit chgline print_c pmsglcd inchar outchar 
 
 *********************************************************************************************
 COPYDOWN SECTION
 ---------------------------------------------------------------------------------------------
-------- ROM-ADDRESS: 0xC1FD ---- SIZE       2 ---
+------- ROM-ADDRESS: 0xC2A8 ---- SIZE       2 ---
 Filling bytes inserted
  0000
 
@@ -1285,14 +1293,20 @@ OBJECT-DEPENDENCIES SECTION
 ---------------------------------------------------------------------------------------------
 Init                      USES _startupData 
 _Startup                  USES __SEG_END_SSTACK Init main 
-main                      USES initializations leftpb _PTT startGame tenths i 
-                                stopGame 
+main                      USES initializations leftpb counter _PTT startGame 
+                                tenths oneSecondOver 
 initializations           USES _CLKSEL _PLLCTL _SYNR _REFDV _CRGFLG _COPCTL 
                                 _SCIBD _SCICR1 _SCICR2 _DDRAB _PORTAB _TSCR1 _TIOS 
                                 _TSCR2 _TC7 _TIE _CRGINT _RTICTL _SPICR1 _SPICR2 
                                 _SPIBR _DDRAD _DDRT _DDRM _ATDDIEN _PTT send_i 
                                 lcdwait _ATDCTL23 _ATDCTL45 target targetInit 
                                 gameRunning_flag 
+deactivateTarget          USES target 
+setPlayer                 USES player_a_allocated player_b_allocated 
+                                activateTarget target 
+oneSecondOver             USES target deactivateTarget setPlayer gameTime 
+                                stopGame 
+activateTarget            USES target 
 startGame                 USES gameRunning_flag player_a_score player_b_score 
                                 player_a_allocated player_b_allocated gameTime 
 stopGame                  USES gameRunning_flag 
@@ -1327,8 +1341,16 @@ DEPENDENCY TREE
  |  |       
  |  +- startGame           
  |  |    
- |  +- stopGame            
- |       
+ |  +- oneSecondOver       
+ |     | 
+ |     +- deactivateTarget    
+ |     |    
+ |     +- setPlayer           
+ |     |  | 
+ |     |  +- activateTarget      
+ |     |       
+ |     +- stopGame            
+ |          
  +- _Startup            
     | 
     +- Init                
@@ -1350,5 +1372,5 @@ STATISTIC SECTION
 ExeFile:
 --------
 Number of blocks to be downloaded: 7
-Total size of all blocks to be downloaded: 517
+Total size of all blocks to be downloaded: 688
 

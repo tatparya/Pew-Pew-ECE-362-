@@ -53,7 +53,7 @@ Target target[NO_TARGETS];
 
 unsigned int gameTime;
 char leftpb = 0;
-int i = 0;
+int counter = 0;
 //Interrupt RTI
 int prevleft = 0;
 
@@ -76,22 +76,23 @@ void main(void)
     if(leftpb)           //PUSH left push button to start the game
     {
       leftpb = 0;
+      counter = 0;
       PTT_PTT1 = 1;  //Light up the LED  (to check if push button is working)
       startGame();   //GAME STARTS
     }
     
     if(tenths == 1) 
     {
-      if(i == 6000) 
+    
+    
+    
+      if(counter == 100) 
       {
-          stopGame(); //60 sec over, game stops
-          i = 0;
+          oneSecondOver();
+          counter = 0;
       }
       
-      
-      
-      
-      i++;
+       counter++;
     }
 
     if(gameRunning_flag != 0) 

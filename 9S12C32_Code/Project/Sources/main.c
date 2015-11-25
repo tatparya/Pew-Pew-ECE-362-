@@ -23,6 +23,8 @@
 #define LINE1  0x80	// LCD line 1 cursor position
 #define LINE2  0xC0	// LCD line 2 cursor position
 
+
+
 void initializations(void);
   void targetInit(Target *myTarget, unsigned char targetMaxScore);
 void targetHit(int targetNumber);
@@ -50,6 +52,16 @@ unsigned int player_b_allocated;
 Target target[NO_TARGETS];
 
 unsigned int gameTime;
+char leftpb = 0;
+int i = 0;
+//Interrupt RTI
+int prevleft = 0;
+
+//Interrupt TIM
+int tencnt = 0;
+int onecnt = 0;
+char tenths = 0;
+char onesec = 0;
 
 void main(void) 
 {
@@ -58,8 +70,29 @@ void main(void)
 	EnableInterrupts;
   for(;;) 
   {
-    _FEED_COP(); // feeds the dog 
-                 // TODO (for watchdog timer @Kanishk)                                           
+    //_FEED_COP(); // feeds the dog 
+                 // TODO (for watchdog timer @Kanishk) 
+                 
+    if(leftpb)           //PUSH left push button to start the game
+    {
+      leftpb = 0;
+      PTT_PTT1 = 1;  //Light up the LED  (to check if push button is working)
+      startGame();   //GAME STARTS
+    }
+    
+    if(tenths == 1) 
+    {
+      if(i == 6000) 
+      {
+          stopGame(); //60 sec over, game stops
+          i = 0;
+      }
+      
+      
+      
+      
+      i++;
+    }
 
     if(gameRunning_flag != 0) 
     {
@@ -80,9 +113,7 @@ void initializations()
   CLKSEL = CLKSEL | 0x80; // engage PLL
   
   
-  /*
-    @Kanishk : Add code here
-  */
+ 
   /* Disable watchdog timer (COPCTL register) */
    COPCTL = 0x40   ; // COP off; RTI and COP stopped in BDM-mode
 
@@ -460,3 +491,69 @@ void outchar(char x)
   while (!(SCISR1 & 0x80));  /* wait for output buffer empty */
   SCIDRL = x;
 }
+ /*
+ ***********************************************************************
+ RTI interrupt service routine: RTI_ISR
+
+   Initialized for 2.048 ms interrupt rate
+
+   Samples state of pushbuttons (PAD7 = left, PAD6 = right)
+
+   If change in state from "high" to "low" detected, set pushbutton flag
+      leftpb (for PAD7 H -> L), rghtpb (for PAD6 H -> L)
+      Recall that pushbuttons are momentary contact closures to ground
+ ***********************************************************************
+ */
+
+ interrupt 7 void RTI_ISR(void)
+ {
+            // clear RTI interrupt flag
+           CRGFLG = CRGFLG | 0x80;
+          
+     //  if(PORTAD0_PTAD6 == 0 && prevrght == 1){
+     //    rghtpb = 1;
+        
+    //   }
+      
+       if(PORTAD0_PTAD7 == 0 && prevleft == 1){
+         leftpb = 1;
+        
+       }
+      
+       prevleft = PORTAD0_PTAD7;
+   //    prevrght = PORTAD0_PTAD6;
+
+ }
+ 
+  /************************************************************************                      
+   TIM interrupt service routine
+
+   Initialized for 10.0 ms interrupt rate
+
+   Uses variable "tencnt" to track if one-tenth second has accumulated
+      and sets "tenths" flag
+                         
+   Uses variable "onecnt" to track if one second has accumulated and
+      sets "onesec" flag                                                                                             
+ ;***********************************************************************
+ */
+
+ interrupt 15 void TIM_ISR(void)
+ {
+           // clear TIM CH 7 interrupt flag
+           TFLG1 = TFLG1 | 0x80;
+           tencnt = tencnt + 1; //update tenct flag
+           onecnt = onecnt + 1; //update one count flag
+          
+           if(tencnt == 10){  //reset tenct flag when it reaches 10
+              tencnt = 0;
+              tenths = 1;
+           }
+          
+           if(onecnt == 100){  //reset onecnt flag when it reaches 100 (100ms in 1 sec)
+              onecnt = 0;
+              onesec = 1;
+           }
+
+ }
+  

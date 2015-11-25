@@ -26,7 +26,7 @@
 
 
 void initializations(void);
-  void targetInit(Target *myTarget, unsigned char targetMaxScore);
+  void targetInit(Target *myTarget, unsigned char targetMaxScore, int *atd);
 void targetHit(int targetNumber);
 void activateTarget(int targetNumber, unsigned char player);
 void deactivateTarget(int targetNumber);
@@ -54,6 +54,7 @@ Target target[NO_TARGETS];
 unsigned int gameTime;
 char leftpb = 0;
 int counter = 0;
+int counter_atd = 0;
 //Interrupt RTI
 int prevleft = 0;
 
@@ -83,15 +84,26 @@ void main(void)
     
     if(tenths == 1) 
     {
-    
-    
+      ATDCTL5 = 0x10;     //perform ATD Conversion
+      while(ATDSTAT0_SCF != 1){};
+      tenths = 0;
+      for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
+      {
+        if(target[counter_atd].player != NO_PLAYER) 
+        {
+          target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
+          targetHit(counter_atd);
+        }
+      }
+      
+      
     
       if(counter == 100) 
       {
           oneSecondOver();
           counter = 0;
       }
-      
+       
        counter++;
     }
 
@@ -198,18 +210,18 @@ void initializations()
 
  // ATD                                                                                                                       
      ATDCTL2 = 0x80; //CONTROL REG 2
-     ATDCTL3 = 0x01; //3
+     ATDCTL3 = 0x30; //3
      ATDCTL4 = 0x85; //4
     
                            
   
   // targetInit(Target *myTarget, unsigned char targetMaxScore)  
-  targetInit( &(target[0]), 10 ); // target 1
-  targetInit( &(target[1]),  9 ); // target 2
-  targetInit( &(target[2]),  7 ); // target 3
-  targetInit( &(target[3]),  5 ); // target 4
-  targetInit( &(target[4]),  3 ); // target 5
-  targetInit( &(target[5]),  3 ); // target 6
+  targetInit( &(target[0]), 10 , &ATDDR0H ); // target 1
+  targetInit( &(target[1]),  9 , &ATDDR1H ); // target 2
+  targetInit( &(target[2]),  7 , &ATDDR2H); // target 3
+  targetInit( &(target[3]),  5 , &ATDDR3H); // target 4
+  targetInit( &(target[4]),  3 , &ATDDR4H); // target 5
+  targetInit( &(target[5]),  3 , &ATDDR5H); // target 6
   
   // Variable initializations
   gameRunning_flag = 0;
@@ -224,6 +236,10 @@ void initializations()
 void deactivateTarget(int targetNumber) 
 {
   target[targetNumber].player = NO_PLAYER;
+  if(target[targetNumber].time_as_player < 2) 
+  {
+    target[targetNumber].time_as_player = 2;          //to off the target momentarily when target switches from one player to another
+  } 
   // @Kanishk : set LED display port OFF
 }
 
@@ -331,12 +347,13 @@ void targetHit(int targetNumber)
               as 0 and sets player number to none
 ***********************************************************************
 */
-void targetInit(Target *myTarget, unsigned char targetMaxScore)
+void targetInit(Target *myTarget, unsigned char targetMaxScore, int *atd)
 {
   myTarget->maxScore       = targetMaxScore;
   myTarget->score          = 0;  
   myTarget->player         = NO_PLAYER; // Defined above
   myTarget->time_as_player = 0;
+  myTarget->atd_address    = atd; 
 }                  
 
 
@@ -509,21 +526,15 @@ void outchar(char x)
  interrupt 7 void RTI_ISR(void)
  {
             // clear RTI interrupt flag
-           CRGFLG = CRGFLG | 0x80;
+    CRGFLG = CRGFLG | 0x80;
           
-     //  if(PORTAD0_PTAD6 == 0 && prevrght == 1){
-     //    rghtpb = 1;
-        
-    //   }
+    if(PORTAD0_PTAD7 == 0 && prevleft == 1)
+    {
+      leftpb = 1;
+    }
       
-       if(PORTAD0_PTAD7 == 0 && prevleft == 1){
-         leftpb = 1;
-        
-       }
-      
-       prevleft = PORTAD0_PTAD7;
-   //    prevrght = PORTAD0_PTAD6;
-
+    prevleft = PORTAD0_PTAD7;
+  
  }
  
   /************************************************************************                      
@@ -541,20 +552,16 @@ void outchar(char x)
 
  interrupt 15 void TIM_ISR(void)
  {
-           // clear TIM CH 7 interrupt flag
-           TFLG1 = TFLG1 | 0x80;
-           tencnt = tencnt + 1; //update tenct flag
-           onecnt = onecnt + 1; //update one count flag
-          
-           if(tencnt == 10){  //reset tenct flag when it reaches 10
-              tencnt = 0;
-              tenths = 1;
-           }
-          
-           if(onecnt == 100){  //reset onecnt flag when it reaches 100 (100ms in 1 sec)
-              onecnt = 0;
-              onesec = 1;
-           }
-
+             // clear TIM CH 7 interrupt flag
+    TFLG1 = TFLG1 | 0x80;
+    tencnt = tencnt + 1; //update tenct flag
+    onecnt = onecnt + 1; //update one count flag
+            
+    if(tencnt == 10)
+    {  //reset tenct flag when it reaches 10
+      tencnt = 0;
+      tenths = 1;
+    }
+            
  }
   

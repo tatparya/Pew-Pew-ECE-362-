@@ -83,6 +83,93 @@ void initializations()
   /*
     @Kanishk : Add code here
   */
+  /* Disable watchdog timer (COPCTL register) */
+   COPCTL = 0x40   ; // COP off; RTI and COP stopped in BDM-mode
+
+ /* Initialize asynchronous serial port (SCI) for 9600 baud, interrupts off initially */
+   SCIBDH =  0x00; //set baud rate to 9600
+   SCIBDL =  0x9C; //24,000,000 / 16 / 156 = 9600 (approx) 
+   SCICR1 =  0x00; //$9C = 156
+   SCICR2 =  0x0C; //initialize SCI for program-driven operation
+   DDRB   =  0x10; //set PB4 for output mode
+   PORTB  =  0x10; //assert DTR pin on COM port
+     
+     
+     
+      
+         
+ /*
+    Initialize TIM Ch 7 (TC7) for periodic interrupts every 10.0 ms 
+    - Enable timer subsystem                        
+     - Set channel 7 for output compare
+     - Set appropriate pre-scale factor and enable counter reset after OC7
+     - Set up channel 7 to generate 10 ms interrupt rate
+     - Initially disable TIM Ch 7 interrupts                                                                                                                         
+ */                                                                                                                         
+    TSCR1 = 0x80; //enables timer subsystem
+    TIOS = 0x80;
+    TSCR2 = 0x0C;
+    TC7 =  15000;
+    TIE = 0x80;
+    
+    
+    
+ /*
+   Initialize the RTI for an 2.048 ms interrupt rate
+ */
+   CRGINT = 0x80;  //enable CRG block
+   RTICTL = 0x27; //2.048 ms interrupt rate
+    
+     /*
+   Initialize SPI for baud rate of 6 Mbs, MSB first
+   (note that R/S, R/W', and LCD clk are on different PTT pins)
+ */
+   SPICR1 = 0x50;   //SPI control registers
+   SPICR2 = 0x00;
+   SPIBR_SPR0 = 1; //baud rate selection bits
+   SPIBR_SPR1 = 0;  
+   SPIBR_SPR2 = 0;
+   SPIBR_SPPR0 = 0; //baud rate preselection bits
+   SPIBR_SPPR1 = 0;
+   SPIBR_SPPR2 = 0;
+
+ /* Initialize digital I/O port pins */
+    DDRAD = 0x00;
+    DDRT = 0x7F;
+    DDRM_DDRM3 = 1; //Initializing registers for LCD module
+    DDRM_DDRM4 = 1;
+    DDRM_DDRM5 = 1;
+    ATDDIEN = 0xC0;   
+    PTT_PTT0 = 0; //PORT 0
+    //PTT_PTT1 = 1; //PORT 1
+
+ /*
+    Initialize the LCD
+      - pull LCDCLK high (idle)
+      - pull R/W' low (write state)
+      - turn on LCD (LCDON instruction)
+      - enable two-line mode (TWOLINE instruction)
+      - clear LCD (LCDCLR instruction)
+      - wait for 2ms so that the LCD can wake up    
+ */
+                                                                                                                          
+    PTT_PTT6 = 1; //LCDCLK HIGH
+    PTT_PTT5 = 0;  //R/W' LOW
+    send_i(LCDON);   //TURN ON LCD
+    send_i(TWOLINE);   // ENABLE 2 LINE MODE
+    send_i(LCDCLR);     //CLEAR LCD
+    lcdwait();          //WAIT FOR LCD TO WAKE UP
+    
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
+
+
+ // ATD                                                                                                                       
+     ATDCTL2 = 0x80; //CONTROL REG 2
+     ATDCTL3 = 0x01; //3
+     ATDCTL4 = 0x85; //4
+    
+                           
   
   // targetInit(Target *myTarget, unsigned char targetMaxScore)  
   targetInit( &(target[0]), 10 ); // target 1

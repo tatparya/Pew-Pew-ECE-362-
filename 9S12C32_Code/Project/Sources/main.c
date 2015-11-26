@@ -32,6 +32,8 @@ void activateTarget(int targetNumber, unsigned char player);
 void deactivateTarget(int targetNumber);
 void oneSecondOver(void);
   void setPlayer(int targetNumber);
+  void clock(void);
+  void set_leds(void); 
 // following are LCD functions
 void print_c(char);
 void pmsglcd(char str[]);
@@ -82,33 +84,34 @@ void main(void)
       startGame();   //GAME STARTS
     }
     
-    if(tenths == 1) 
-    {
-      ATDCTL5 = 0x10;     //perform ATD Conversion
-      while(ATDSTAT0_SCF != 1){};
-      tenths = 0;
-      for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
-      {
-        if(target[counter_atd].player != NO_PLAYER) 
-        {
-          target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
-          targetHit(counter_atd);
-        }
-      }
-      
-      
-    
-      if(counter == 100) 
-      {
-          oneSecondOver();
-          counter = 0;
-      }
-       
-       counter++;
-    }
-
     if(gameRunning_flag != 0) 
     {
+      if(tenths == 1) 
+      {
+        ATDCTL5 = 0x10;     //perform ATD Conversion
+        while(ATDSTAT0_SCF != 1){};
+        tenths = 0;
+        for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
+        {
+          if(target[counter_atd].player != NO_PLAYER) 
+          {
+            target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
+            targetHit(counter_atd);
+          }
+        }
+        
+        
+      
+        if(counter == 100) 
+        {
+            oneSecondOver();
+            counter = 0;
+        }
+         
+         counter++;
+      }
+
+      
       
     }
     
@@ -235,12 +238,14 @@ void initializations()
 */
 void deactivateTarget(int targetNumber) 
 {
+  
   target[targetNumber].player = NO_PLAYER;
   if(target[targetNumber].time_as_player < 2) 
   {
     target[targetNumber].time_as_player = 2;          //to off the target momentarily when target switches from one player to another
   } 
   // @Kanishk : set LED display port OFF
+    set_leds();
 }
 
 /*
@@ -314,8 +319,9 @@ void oneSecondOver()
 */
 void activateTarget(int targetNumber, unsigned char player) 
 {
+  
   target[targetNumber].player = player;
-  // @Kanishk : set LED display port ON
+  set_leds();
 }
 
 /*
@@ -564,4 +570,44 @@ void outchar(char x)
     }
             
  }
-  
+ /*
+***********************************************************************
+  clock: clock
+***********************************************************************
+*/ 
+void clock() 
+{
+  PTT_PTT1 = 1;
+  PTT_PTT1 = 0;
+  PTT_PTT1 = 1;  
+}
+ /*
+***********************************************************************
+  set_leds: set LEDS
+***********************************************************************
+*/ 
+void set_leds() 
+{
+  int i; 
+  for(i = NO_TARGETS-1; i >= 0;i--) 
+  {
+    if(target[i].player == PLAYER_A)
+    {
+      PTT_PTT0 = 1;
+    } 
+    else
+    {
+      PTT_PTT0 = 0;
+    }
+    clock();
+     if(target[i].player == PLAYER_B)
+    {
+      PTT_PTT0 = 1;
+    } 
+    else
+    {
+      PTT_PTT0 = 0;
+    }
+    clock();      
+  }  
+}

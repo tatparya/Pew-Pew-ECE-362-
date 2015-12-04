@@ -8,7 +8,7 @@
 #define PLAYER_B  2
 
 /* ASCII character definitions */
-#define CR 0x0D	// ASCII return character   
+#define CR 0x0D	// ASCII return character   
 
 /* LCD COMMUNICATION BIT MASKS */
 #define RS 0x04		// RS pin mask (PTT[2])
@@ -25,7 +25,6 @@
 
 
 
-void initializations(void);
   void targetInit(Target *myTarget, unsigned char targetMaxScore, int *atd);
 void targetHit(int targetNumber);
 void activateTarget(int targetNumber, unsigned char player);
@@ -42,6 +41,7 @@ void pmsglcd(char str[]);
   void send_byte(char);
   void send_i(char);
   void chgline(char);
+  void outchar(char x); 
 // for RTI initializations
 void startGame(void);
   void stopGame(void);
@@ -55,69 +55,22 @@ Target target[NO_TARGETS];
 
 unsigned int gameTime;
 char leftpb = 0;
+char rghtpb = 0;
 int counter = 0;
 int counter_atd = 0;
 //Interrupt RTI
 int prevleft = 0;
+int prevrght = 0;
 
 //Interrupt TIM
 int tencnt = 0;
 int onecnt = 0;
 char tenths = 0;
 char onesec = 0;
-
-void main(void) 
-{
-  DisableInterrupts
-  initializations();
-	EnableInterrupts;
-  for(;;) 
-  {
-    //_FEED_COP(); // feeds the dog 
-                 // TODO (for watchdog timer @Kanishk) 
-                 
-    if(leftpb)           //PUSH left push button to start the game
-    {
-      leftpb = 0;
-      counter = 0;
-      PTT_PTT1 = 1;  //Light up the LED  (to check if push button is working)
-      startGame();   //GAME STARTS
-    }
-    
-    if(gameRunning_flag != 0) 
-    {
-      if(tenths == 1) 
-      {
-        ATDCTL5 = 0x10;     //perform ATD Conversion
-        while(ATDSTAT0_SCF != 1){};
-        tenths = 0;
-        for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
-        {
-          if(target[counter_atd].player != NO_PLAYER) 
-          {
-            target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
-            targetHit(counter_atd);
-          }
-        }
-        
-        
-      
-        if(counter == 100) 
-        {
-            oneSecondOver();
-            counter = 0;
-        }
-         
-         counter++;
-      }
-
-      
-      
-    }
-    
-  }
-}
-
+char test = 0;
+char test_1 = 0;
+char test_2 = 0;
+char test_3 = 0;
 void initializations() 
 {
   /* Set the PLL speed (bus clock = 24 MHz) */
@@ -141,32 +94,9 @@ void initializations()
    DDRB   =  0x10; //set PB4 for output mode
    PORTB  =  0x10; //assert DTR pin on COM port
      
-     
-     
-      
          
- /*
-    Initialize TIM Ch 7 (TC7) for periodic interrupts every 10.0 ms 
-    - Enable timer subsystem                        
-     - Set channel 7 for output compare
-     - Set appropriate pre-scale factor and enable counter reset after OC7
-     - Set up channel 7 to generate 10 ms interrupt rate
-     - Initially disable TIM Ch 7 interrupts                                                                                                                         
- */                                                                                                                         
-    TSCR1 = 0x80; //enables timer subsystem
-    TIOS = 0x80;
-    TSCR2 = 0x0C;
-    TC7 =  15000;
-    TIE = 0x80;
-    
-    
-    
- /*
-   Initialize the RTI for an 2.048 ms interrupt rate
- */
-   CRGINT = 0x80;  //enable CRG block
-   RTICTL = 0x27; //2.048 ms interrupt rate
-    
+ 
+ 
      /*
    Initialize SPI for baud rate of 6 Mbs, MSB first
    (note that R/S, R/W', and LCD clk are on different PTT pins)
@@ -182,14 +112,15 @@ void initializations()
 
  /* Initialize digital I/O port pins */
     DDRAD = 0x00;
-    DDRT = 0x7F;
+    DDRT = 0xFF;
     DDRM_DDRM3 = 1; //Initializing registers for LCD module
     DDRM_DDRM4 = 1;
     DDRM_DDRM5 = 1;
-    ATDDIEN = 0xC0;   
+    ATDDIEN = 0xFF; // 0011_1111 input enable 3F  
     PTT_PTT0 = 0; //PORT 0
-    //PTT_PTT1 = 1; //PORT 1
-
+    PTT_PTT1 = 0; //PORT 1
+    PTT_PTT3 = 0;
+    PTT_PTT2 = 0;
  /*
     Initialize the LCD
       - pull LCDCLK high (idle)
@@ -209,13 +140,35 @@ void initializations()
     
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-
+ /*
+   Initialize the RTI for an 2.048 ms interrupt rate
+ */
+   RTICTL = 0x1F; //2.048 ms interrupt rate
+   CRGINT = 0x80;  //enable CRG block
+  
+   
+  /*
+    Initialize TIM Ch 7 (TC7) for periodic interrupts every 10.0 ms 
+    - Enable timer subsystem                        
+     - Set channel 7 for output compare
+     - Set appropriate pre-scale factor and enable counter reset after OC7
+     - Set up channel 7 to generate 10 ms interrupt rate
+     - Initially disable TIM Ch 7 interrupts                                                                                                                         
+ */                                                                                                                         
+    TSCR1 = 0x80; //enables timer subsystem
+    TIOS = 0x80;
+    TSCR2 = 0x0C;
+    TC7 =  1500;
+    TIE = 0x80;
+   // TIE_C7I = 0;
+    
+   
 
  // ATD                                                                                                                       
      ATDCTL2 = 0x80; //CONTROL REG 2
-     ATDCTL3 = 0x30; //3
+     ATDCTL3 = 0x30; //3 TO ENABLE 6 CONVRESIONS
      ATDCTL4 = 0x85; //4
-    
+     ATDCTL2_AFFC = 1;
                            
   
   // targetInit(Target *myTarget, unsigned char targetMaxScore)  
@@ -229,6 +182,141 @@ void initializations()
   // Variable initializations
   gameRunning_flag = 0;
 }
+
+void main(void) 
+{
+  DisableInterrupts
+  initializations();
+	EnableInterrupts;
+  for(;;) 
+  {
+    //_FEED_COP(); // feeds the dog 
+                 // TODO (for watchdog timer @Kanishk) 
+                 
+    if(leftpb)           //PUSH left push button to start the game
+    {
+      leftpb = 0;
+      counter = 0;
+      outchar('C');
+      PTT_PTT1 = 1;//Light up the LED  (to check if push button is working)
+      startGame();   //GAME STARTS
+    }
+    
+    if(gameRunning_flag != 0) 
+    {
+      if(tenths) 
+      {
+        tenths = 0;   
+        //PTT_PTT0 = 0;////////////////////////////////////////////////////
+        if(counter == 100) 
+          {
+           // PTT_PTT0 = 1;  //////////////////////////////////////
+            oneSecondOver();
+            counter = 0;
+          }       
+          counter++;
+        ATDCTL5 = 0x10;     //perform ATD Conversion
+        while(ATDSTAT0_SCF != 1){};
+        
+        for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
+        {
+              
+              if(ATDDR5H > 128) {
+              PTT_PTT0 = 1;
+              }
+              
+          if(target[counter_atd].player != NO_PLAYER) 
+          {
+            test = ATDDR0H;      ///////////////////////////////////////////////////////
+            test_1 = (test % 10);
+            test_2 = (test/10) %10;
+            test_3 = (test/100) %10;  //////////////////////////////////////////////////
+            outchar('C');
+            outchar(':');
+            outchar(test_3);
+            outchar(test_2);
+            outchar(test_1);
+            outchar(CR);
+           
+            
+            target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
+            targetHit(counter_atd);
+          }
+        }
+        
+          
+      }
+              
+            
+      
+    }
+    
+  }
+}
+
+ /*
+ ***********************************************************************
+ RTI interrupt service routine: RTI_ISR
+   Initialized for 2.048 ms interrupt rate
+   Samples state of pushbuttons (PAD7 = left, PAD6 = right)
+   If change in state from "high" to "low" detected, set pushbutton flag
+      leftpb (for PAD7 H -> L), rghtpb (for PAD6 H -> L)
+      Recall that pushbuttons are momentary contact closures to ground
+ ***********************************************************************
+ */
+
+interrupt 7 void RTI_ISR(void)
+ {
+            // clear RTI interrupt flag
+           CRGFLG = CRGFLG | 0x80;
+           
+          
+       if(PORTAD0_PTAD6 == 0 && prevrght == 1){
+         rghtpb = 1;
+          ;
+        
+       }
+      
+       if(PORTAD0_PTAD7 == 0 && prevleft == 1){
+         leftpb = 1;
+        //  PTT_PTT0 = 1; //PORT 0
+         //  PTT_PTT1 = 1;
+        
+       }
+      
+       prevleft = PORTAD0_PTAD7;
+       prevrght = PORTAD0_PTAD6;
+      ;
+
+ }
+ 
+  /************************************************************************                      
+   TIM interrupt service routine
+   Initialized for 10.0 ms interrupt rate
+   Uses variable "tencnt" to track if one-tenth second has accumulated
+      and sets "tenths" flag
+                         
+   Uses variable "onecnt" to track if one second has accumulated and
+      sets "onesec" flag                                                                                             
+ ;***********************************************************************
+ */
+
+ interrupt 15 void TIM_ISR(void)
+ {
+             // clear TIM CH 7 interrupt flag
+    TFLG1 = TFLG1 | 0x80;
+    tencnt = tencnt + 1; //update tenct flag
+    //onecnt = onecnt + 1; //update one count flag
+            
+    if(tencnt == 10)
+    {  //reset tenct flag when it reaches 10
+      tencnt = 0;
+      tenths = 1;     
+    }
+            
+ }
+
+
 
 
 /*
@@ -301,13 +389,13 @@ void oneSecondOver()
       else 
       {
         --target[i].time_as_player;
-      }
-      
+      }      
     }
   }
   --gameTime;
   if(gameTime == 0) 
   {
+    PTT_PTT1 = 0;
     stopGame();
   }
 }
@@ -515,61 +603,7 @@ void outchar(char x)
   while (!(SCISR1 & 0x80));  /* wait for output buffer empty */
   SCIDRL = x;
 }
- /*
- ***********************************************************************
- RTI interrupt service routine: RTI_ISR
 
-   Initialized for 2.048 ms interrupt rate
-
-   Samples state of pushbuttons (PAD7 = left, PAD6 = right)
-
-   If change in state from "high" to "low" detected, set pushbutton flag
-      leftpb (for PAD7 H -> L), rghtpb (for PAD6 H -> L)
-      Recall that pushbuttons are momentary contact closures to ground
- ***********************************************************************
- */
-
- interrupt 7 void RTI_ISR(void)
- {
-            // clear RTI interrupt flag
-    CRGFLG = CRGFLG | 0x80;
-          
-    if(PORTAD0_PTAD7 == 0 && prevleft == 1)
-    {
-      leftpb = 1;
-    }
-      
-    prevleft = PORTAD0_PTAD7;
-  
- }
- 
-  /************************************************************************                      
-   TIM interrupt service routine
-
-   Initialized for 10.0 ms interrupt rate
-
-   Uses variable "tencnt" to track if one-tenth second has accumulated
-      and sets "tenths" flag
-                         
-   Uses variable "onecnt" to track if one second has accumulated and
-      sets "onesec" flag                                                                                             
- ;***********************************************************************
- */
-
- interrupt 15 void TIM_ISR(void)
- {
-             // clear TIM CH 7 interrupt flag
-    TFLG1 = TFLG1 | 0x80;
-    tencnt = tencnt + 1; //update tenct flag
-    onecnt = onecnt + 1; //update one count flag
-            
-    if(tencnt == 10)
-    {  //reset tenct flag when it reaches 10
-      tencnt = 0;
-      tenths = 1;
-    }
-            
- }
  /*
 ***********************************************************************
   clock: clock
@@ -577,9 +611,9 @@ void outchar(char x)
 */ 
 void clock() 
 {
-  PTT_PTT1 = 1;
-  PTT_PTT1 = 0;
-  PTT_PTT1 = 1;  
+  PTT_PTT3 = 1;
+  PTT_PTT3 = 0;
+  PTT_PTT3 = 1;  
 }
  /*
 ***********************************************************************
@@ -593,20 +627,20 @@ void set_leds()
   {
     if(target[i].player == PLAYER_A)
     {
-      PTT_PTT0 = 1;
+      PTT_PTT2 = 1;
     } 
     else
     {
-      PTT_PTT0 = 0;
+      PTT_PTT2 = 0;
     }
     clock();
      if(target[i].player == PLAYER_B)
     {
-      PTT_PTT0 = 1;
+      PTT_PTT2 = 1;
     } 
     else
     {
-      PTT_PTT0 = 0;
+      PTT_PTT2 = 0;
     }
     clock();      
   }  

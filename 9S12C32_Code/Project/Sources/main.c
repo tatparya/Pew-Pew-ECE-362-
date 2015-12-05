@@ -61,6 +61,7 @@ int counter_atd = 0;
 //Interrupt RTI
 int prevleft = 0;
 int prevrght = 0;
+int max = 0;
 
 //Interrupt TIM
 int tencnt = 0;
@@ -71,6 +72,14 @@ char test = 0;
 char test_1 = 0;
 char test_2 = 0;
 char test_3 = 0;
+
+int val = 0;
+int tempMax = 0;
+char valStr[] = "***";
+char maxStr[] = "***";
+int itr = 0;
+						
+						
 void initializations() 
 {
   /* Set the PLL speed (bus clock = 24 MHz) */
@@ -94,9 +103,6 @@ void initializations()
    DDRB   =  0x10; //set PB4 for output mode
    PORTB  =  0x10; //assert DTR pin on COM port
      
-         
- 
- 
      /*
    Initialize SPI for baud rate of 6 Mbs, MSB first
    (note that R/S, R/W', and LCD clk are on different PTT pins)
@@ -185,73 +191,143 @@ void initializations()
 
 void main(void) 
 {
-  DisableInterrupts
-  initializations();
+	DisableInterrupts
+	initializations();
 	EnableInterrupts;
-  for(;;) 
-  {
-    //_FEED_COP(); // feeds the dog 
-                 // TODO (for watchdog timer @Kanishk) 
-                 
-    if(leftpb)           //PUSH left push button to start the game
-    {
-      leftpb = 0;
-      counter = 0;
-      outchar('C');
-      PTT_PTT1 = 1;//Light up the LED  (to check if push button is working)
-      startGame();   //GAME STARTS
-    }
+	
+	//  Clear screen
+	send_i(LCDCLR);
+	//  Change Line
+	chgline(LINE1);
+
+	pmsglcd( "Hello World!!" );
+	
+	for(;;) 
+	{
+
     
-    if(gameRunning_flag != 0) 
-    {
-      if(tenths) 
-      {
-        tenths = 0;   
-        //PTT_PTT0 = 0;////////////////////////////////////////////////////
-        if(counter == 100) 
-          {
-           // PTT_PTT0 = 1;  //////////////////////////////////////
-            oneSecondOver();
-            counter = 0;
-          }       
-          counter++;
-        ATDCTL5 = 0x10;     //perform ATD Conversion
-        while(ATDSTAT0_SCF != 1){};
-        
-        for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
-        {
-              
-              if(ATDDR5H > 128) {
-              PTT_PTT0 = 1;
-              }
-              
-          if(target[counter_atd].player != NO_PLAYER) 
-          {
-            test = ATDDR0H;      ///////////////////////////////////////////////////////
-            test_1 = (test % 10);
-            test_2 = (test/10) %10;
-            test_3 = (test/100) %10;  //////////////////////////////////////////////////
-            outchar('C');
-            outchar(':');
-            outchar(test_3);
-            outchar(test_2);
-            outchar(test_1);
-            outchar(CR);
-           
-            
-            target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
-            targetHit(counter_atd);
-          }
-        }
-        
-          
-      }
-              
-            
-      
-    }
+		//_FEED_COP(); // feeds the dog 
+		// TODO (for watchdog timer @Kanishk) 
+
+		if(leftpb)           //PUSH left push button to start the game
+		{
+			leftpb = 0;
+			//  Clear screen
+			send_i(LCDCLR);
+			//  Change Line
+			chgline(LINE1);
+			pmsglcd("Game running");
+			send_i(LCDCLR);
+			max = 0;
+
+			counter = 0;
+			outchar('C');
+			PTT_PTT1 = 1;//Light up the LED  (to check if push button is working)
+			startGame();   //GAME STARTS
+		}
     
-  }
+		if( rghtpb )
+		{      
+			rghtpb = 0;
+
+			//  Clear screen
+			send_i(LCDCLR);
+			//  Change Line
+			chgline(LINE1);
+			pmsglcd("Game reset");
+
+			PTT_PTT0 = 0;
+			PTT_PTT1 = 0;    
+			gameRunning_flag = 0;
+		}
+    
+		if(gameRunning_flag != 0) 
+		{
+			if(tenths) 
+			{
+				tenths = 0;   
+				//PTT_PTT0 = 0;////////////////////////////////////////////////////
+				if(counter == 100) 
+				{
+				// PTT_PTT0 = 1;  //////////////////////////////////////
+				oneSecondOver();
+				counter = 0;
+				}       
+				counter++;
+				ATDCTL5 = 0x10;     //perform ATD Conversion
+				while(ATDSTAT0_SCF != 1){};
+
+				for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
+				{
+				  // Printing val on lcd
+				  valStr[0] = '*';
+				  valStr[1] = '*';
+				  valStr[2] = '*';
+				  maxStr[0] = '*';
+				  maxStr[1] = '*';
+				  maxStr[2] = '*';
+				  
+        	val = ATDDR5H; 
+        	tempMax = max;    
+        	if( val > max ) {
+        	  max = val; 
+        	}
+					itr = 2;
+					while( val != 0 ) 
+					{
+
+						valStr[ itr ] = val % 10 + '0';
+						itr--;
+						val /= 10;
+						
+					}
+					itr = 2;
+					while( tempMax != 0 ) 
+					{
+
+						maxStr[ itr ] = tempMax % 10 + '0';
+						itr--;
+						tempMax /= 10;
+
+					}
+				  
+			    chgline(LINE1);	
+					pmsglcd( "val = " );
+					pmsglcd( valStr );
+					
+					if(ATDDR5H > 20)
+					{
+					
+					  pmsglcd( "  HIT!! " );
+						PTT_PTT0 = 1;
+					}
+
+		    	chgline(LINE2);
+					pmsglcd( " max = " );
+					pmsglcd( maxStr );
+
+					if(target[counter_atd].player != NO_PLAYER) 
+					{
+						test = ATDDR0H;      ///////////////////////////////////////////////////////
+						test_1 = (test % 10);
+						test_2 = (test/10) %10;
+						test_3 = (test/100) %10;  //////////////////////////////////////////////////
+
+						outchar('C');
+						outchar(':');
+						outchar(test_3);
+						outchar(test_2);
+						outchar(test_1);
+						outchar(CR);
+
+
+						target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
+						targetHit(counter_atd);
+					}
+				}
+			}
+		}
+	}
 }
 
  /*
@@ -273,7 +349,6 @@ interrupt 7 void RTI_ISR(void)
           
        if(PORTAD0_PTAD6 == 0 && prevrght == 1){
          rghtpb = 1;
-          ;
         
        }
       
@@ -286,7 +361,6 @@ interrupt 7 void RTI_ISR(void)
       
        prevleft = PORTAD0_PTAD7;
        prevrght = PORTAD0_PTAD6;
-      ;
 
  }
  
@@ -489,12 +563,18 @@ void stopGame(void)
 */ 
 void shiftout(char x)
 {       
-  int ctr;
-  while(!SPISR_SPTEF) {} // read the SPTEF bit, continue if bit is 1
-  SPIDR = x; // write data to SPI data register
-                                    
-  // wait for 30 cycles for SPI data to shift out 
-  for(ctr = 0; ctr < 30; ++ctr) {;}   
+   int itr = 30;
+   // read the SPTEF bit, continue if bit is 1
+   while(!SPISR_SPTEF)
+   {          
+   }
+   // write data to SPI data register
+   SPIDR = x;               
+   // wait for 30 cycles for SPI data to shift out
+   while(itr) 
+   {             
+     itr--;
+   } 
 }
 
 /*
@@ -504,9 +584,11 @@ void shiftout(char x)
 */
 void lcdwait()
 {
-  int k = 5000;
-  while(k-- > 0)
-  {;}
+  int itr = 5000;
+  while( itr )
+  {
+    itr--;
+  } 
 }
 
 /*
@@ -516,11 +598,14 @@ void lcdwait()
 */
 void send_byte(char x)
 {     
-  shiftout(x);  // shift out character
-  PTT_PTT4 = 1;
-  PTT_PTT4 = 0; // pulse LCD clock line low->high->low
-  PTT_PTT4 = 1;
-  lcdwait();    // wait 2 ms for LCD to process data
+     // shift out character
+     shiftout(x);      
+     // pulse LCD clock line low->high->low
+     PTT_PTT6 = 1;     
+     PTT_PTT6 = 0;
+     PTT_PTT6 = 1;
+     // wait 2 ms for LCD to process data
+     lcdwait();   
 }
 
 /*
@@ -532,7 +617,7 @@ void send_i(char x)
 {
   // set the register select line low (instruction data)
   // send byte
-  PTT_PTT2 = 0;
+  PTT_PTT4 = 0;
   send_byte(x);  
 }
 
@@ -555,7 +640,7 @@ void chgline(char x)
 */ 
 void print_c(char x)
 {
-  PTT_PTT2 = 1;
+  PTT_PTT4 = 1;
   send_byte(x);
 }
 

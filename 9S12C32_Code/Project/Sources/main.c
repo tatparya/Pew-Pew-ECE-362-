@@ -65,8 +65,8 @@
 #include <mc9s12c32.h>
 
 /* Game oriented definitions */
-#define GAMETIME_DATA PORTAD0_PTAD6 // TODO @Kanishk
-#define GAMETIME_CLK PORTAD0_PTAD7  // TODO @Kanishk
+#define GAMETIME_DATA PTT_PTT0
+#define GAMETIME_CLK PTT_PTT1
 #define NO_TARGETS 6
 #define NO_PLAYER 0
 #define PLAYER_A  1
@@ -139,7 +139,6 @@ char test = 0;
 char test_1 = 0;
 char test_2 = 0;
 char test_3 = 0;
-int ledFlag = 0;
 
 
 int val = 0;
@@ -205,7 +204,6 @@ void initializations()
       - clear LCD (LCDCLR instruction)
       - wait for 2ms so that the LCD can wake up    
  */
-                                                                                                                          
     PTT_PTT6 = 1; //LCDCLK HIGH
     PTT_PTT5 = 0;  //R/W' LOW
     send_i(LCDON);   //TURN ON LCD
@@ -213,15 +211,12 @@ void initializations()
     send_i(LCDCLR);     //CLEAR LCD
     lcdwait();          //WAIT FOR LCD TO WAKE UP
     
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
- /*
+  /*
    Initialize the RTI for an 2.048 ms interrupt rate
- */
-   RTICTL = 0x1F; //2.048 ms interrupt rate
-   CRGINT = 0x80;  //enable CRG block
+  */
+  RTICTL = 0x1F; //2.048 ms interrupt rate
+  CRGINT = 0x80;  //enable CRG block
   
-   
   /*
     Initialize TIM Ch 7 (TC7) for periodic interrupts every 10.0 ms 
     - Enable timer subsystem                        
@@ -229,22 +224,20 @@ void initializations()
      - Set appropriate pre-scale factor and enable counter reset after OC7
      - Set up channel 7 to generate 10 ms interrupt rate
      - Initially disable TIM Ch 7 interrupts                                                                                                                         
- */                                                                                                                         
-    TSCR1 = 0x80; //enables timer subsystem
-    TIOS = 0x80;
-    TSCR2 = 0x0C;
-    TC7 =  1500;
-    TIE = 0x80;
-   // TIE_C7I = 0;
+  */                                                                                                                         
+  TSCR1 = 0x80; //enables timer subsystem
+  TIOS = 0x80;
+  TSCR2 = 0x0C;
+  TC7 =  1500;
+  TIE = 0x80;
+  // TIE_C7I = 0;
     
-   
-
- // ATD                                                                                                                       
-     ATDCTL2 = 0x80; //CONTROL REG 2
-     ATDCTL3 = 0x30; //3 TO ENABLE 6 CONVRESIONS
-     ATDCTL4 = 0x85; //4
-     ATDCTL2_AFFC = 1;
-                           
+    
+  // ATD                                                                                                                       
+  ATDCTL2 = 0x80; //CONTROL REG 2
+  ATDCTL3 = 0x30; //3 TO ENABLE 6 CONVRESIONS
+  ATDCTL4 = 0x85; //4
+  ATDCTL2_AFFC = 1;
   
   // targetInit(Target *myTarget, unsigned char targetMaxScore)  
   targetInit( &(target[0]), 10 , &ATDDR0H ); // target 1
@@ -264,12 +257,11 @@ void main(void)
   initializations();
   EnableInterrupts;
 	
-  //  Clear screen
   send_i(LCDCLR);
-  //  Change Line
   chgline(LINE1);
-
-  pmsglcd( "Hello World!!" );
+  pmsglcd("BangBang sez yo");
+  chgline(LINE2);
+  pmsglcd("Strt 2 play gem");
 	
   for(;;) 
   {
@@ -278,29 +270,23 @@ void main(void)
     if(leftpb)           //PUSH left push button to start the game
     {
       leftpb = 0;
-      //  Clear screen
-      send_i(LCDCLR);
-      //  Change Line
-      chgline(LINE1);
-      pmsglcd("Game running");
-      send_i(LCDCLR);
+      
       max = 0;
-
-      counter = 0;
-      outchar('C');
-      PTT_PTT1 = 1;//Light up the LED  (to check if push button is working)
-      startGame();   //GAME STARTS
+      
+      counter = 0;   // Counts to 100 for a second
+      PTT_PTT1 = 1;  // Light up the LED  (game started!)
+      startGame();   // GAME STARTS
     }
     
     if( rghtpb )
     {      
       rghtpb = 0;
 
-      //  Clear screen
       send_i(LCDCLR);
-      //  Change Line
       chgline(LINE1);
-      pmsglcd("Game reset");
+      pmsglcd("BangBang sez yo");
+      chgline(LINE2);
+      pmsglcd("Strt 2 play gem");
 
       PTT_PTT0 = 0;
       PTT_PTT1 = 0;    
@@ -333,37 +319,38 @@ void main(void)
             }
           }
       }
-*/      if(target[counter_atd].player == PLAYER_A || target[counter_atd].player == PLAYER_B)
+*/      
+        if(target[counter_atd].player == PLAYER_A || target[counter_atd].player == PLAYER_B)
         {
   
           if(ATDDR0H > 20) 
           {
-            target[counter_atd].score = target[counter_atd].maxScore;
+            target[counter_atd].score = 10;
             targetHit(counter_atd);
           }
           if(ATDDR1H > 20) 
           {
-            target[counter_atd].score = target[counter_atd].maxScore;
+            target[counter_atd].score = 10;
             targetHit(counter_atd);
           }
           if(ATDDR2H > 20) 
           {
-            target[counter_atd].score = target[counter_atd].maxScore;
+            target[counter_atd].score = 10;
             targetHit(counter_atd);
           }
           if(ATDDR3H > 20) 
           {
-            target[counter_atd].score = target[counter_atd].maxScore;
+            target[counter_atd].score = 10;
             targetHit(counter_atd);
           }
           if(ATDDR4H > 20) 
           {
-            target[counter_atd].score = target[counter_atd].maxScore;
+            target[counter_atd].score = 10;
             targetHit(counter_atd);
           }
           if(ATDDR5H > 20) 
           {
-            target[counter_atd].score = target[counter_atd].maxScore;
+            target[counter_atd].score = 10;
             targetHit(counter_atd);
           }
         }
@@ -414,23 +401,19 @@ interrupt 7 void RTI_ISR(void)
       sets "onesec" flag                                                                                             
  ;***********************************************************************
  */
- interrupt 15 void TIM_ISR(void)
- {
-             // clear TIM CH 7 interrupt flag
-    TFLG1 = TFLG1 | 0x80;
-    tencnt = tencnt + 1; //update tenct flag
-    //onecnt = onecnt + 1; //update one count flag
-            
-    if(tencnt == 10)
-    {  //reset tenct flag when it reaches 10
-      tencnt = 0;
-      tenths = 1;     
-    }
-            
- }
-
-
-
+interrupt 15 void TIM_ISR(void)
+{
+   // clear TIM CH 7 interrupt flag
+   TFLG1 = TFLG1 | 0x80;
+   tencnt = tencnt + 1; //update tenct flag
+   //onecnt = onecnt + 1; //update one count flag
+           
+   if(tencnt == 10)
+   {  //reset tenct flag when it reaches 10
+     tencnt = 0;
+     tenths = 1;     
+   }
+}
 
 /*
 ***********************************************************************
@@ -441,15 +424,8 @@ void deactivateTarget(int targetNumber)
 {
   
   target[targetNumber].player = NO_PLAYER;
-  ledFlag = 1;
- // if(target[targetNumber].time_as_player < 2) 
-  //{
-   // target[targetNumber].time_as_player = 2;          //to off the target momentarily when target switches from one player to another
-  //} 
-  // @Kanishk : set LED display port OFF
- // else{
-    set_leds();
- // }
+  set_leds();
+
 }
 
 /*
@@ -508,11 +484,6 @@ void oneSecondOver()
     PTT_PTT1 = 0;
     stopGame();
   }
-  if(ledFlag)
-  {
-    //set_leds();
-    ledFlag = 0;
-  }
 }
 
 /*
@@ -522,9 +493,7 @@ void oneSecondOver()
 */
 void activateTarget(int targetNumber, unsigned char player) 
 {
-  
   target[targetNumber].player = player;
-  ledFlag = 1;
   set_leds();
 }
 
@@ -545,9 +514,8 @@ void targetHit(int targetNumber)
     player_b_score += target[targetNumber].score;      
   }
   
-  target[targetNumber].score = 0; 
-  deactivateTarget(targetNumber);     
-  // @Kanishk: Decide if want to flash color of player on port
+  target[targetNumber].score = 0;
+  deactivateTarget(targetNumber);
 }                  
 
 
@@ -585,7 +553,13 @@ void gameTimeClock()
 ***********************************************************************
 */
 void startGame(void) 
-{
+{ 
+  send_i(LCDCLR);
+  chgline(LINE1);
+  pmsglcd("Best o' luck!");
+  chgline(LINE2);
+  pmsglcd("Have fun!");
+
   gameRunning_flag = 1;
   player_a_score = 0;
   player_b_score = 0;
@@ -621,7 +595,15 @@ void stopGame(void)
   set_leds();
   send_i(LCDCLR);
   chgline(LINE1);
-  pmsglcd("Player");
+  pmsglcd("Player A: ");
+  print_c( (char)((player_a_score / 100 % 10) + 48) );
+  print_c( (char)((player_a_score / 10 % 10) + 48) );
+  print_c( (char)((player_a_score % 10) + 48) );
+  chgline(LINE2);
+  pmsglcd("Player B: ");
+  print_c( (char)((player_b_score / 100 % 10) + 48) );
+  print_c( (char)((player_b_score / 10 % 10) + 48) );
+  print_c( (char)((player_b_score % 10) + 48) );
 }
 
 /*

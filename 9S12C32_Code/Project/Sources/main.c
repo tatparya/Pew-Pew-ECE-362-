@@ -4,59 +4,34 @@
 ***********************************************************************
 	 	   			 		  			 		  		
  Team ID: 22
-
  Project Name: Bang Bang
-
  Team Members:
-
    - Team/Doc Leader: Harika Thatukuru       Signature: ______________________
    
    - Software Leader: Abhishek Srikanth      Signature: Abhishek
-
    - Interface Leader: Tatparya Shankar      Signature: ______________________
-
    - Peripheral Leader: Kanishk Yadav        Signature: Kanishk
-
-
  Academic Honesty Statement:  In signing above, we hereby certify that we 
  are the individuals who created this HC(S)12 source file and that we have
  not copied the work of any other student (past or present) while completing 
  it. We understand that if we fail to honor this agreement, we will receive 
  a grade of ZERO and be subject to possible disciplinary action.
-
 ***********************************************************************
-
  The objective of this Mini-Project is to .... < ? >
-
-
 ***********************************************************************
-
  List of project-specific success criteria (functionality that will be
  demonstrated):
-
  1.
-
  2.
-
  3.
-
  4.
-
  5.
-
 ***********************************************************************
-
   Date code started: < ? >
-
   Update history (add an entry every time a significant change is made):
-
   Date: < ? >  Name: < ? >   Update: < ? >
-
   Date: < ? >  Name: < ? >   Update: < ? >
-
   Date: < ? >  Name: < ? >   Update: < ? >
-
-
 ***********************************************************************
 */
 
@@ -274,7 +249,7 @@ void main(void)
       max = 0;
       
       counter = 0;   // Counts to 100 for a second
-      PTT_PTT1 = 1;  // Light up the LED  (game started!)
+     // PTT_PTT1 = 1;  // Light up the LED  (game started!)
       startGame();   // GAME STARTS
     }
     
@@ -288,8 +263,8 @@ void main(void)
       chgline(LINE2);
       pmsglcd("Strt 2 play gem");
 
-      PTT_PTT0 = 0;
-      PTT_PTT1 = 0;    
+      //PTT_PTT0 = 0;
+      //PTT_PTT1 = 0;    
       gameRunning_flag = 0;
     }
     
@@ -481,7 +456,7 @@ void oneSecondOver()
   }
   if(gameTime == 0) 
   {
-    PTT_PTT1 = 0;
+   // PTT_PTT1 = 0;
     stopGame();
   }
 }

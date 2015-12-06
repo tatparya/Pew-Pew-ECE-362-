@@ -448,7 +448,7 @@ void deactivateTarget(int targetNumber)
   //} 
   // @Kanishk : set LED display port OFF
  // else{
-  //  set_leds();
+    set_leds();
  // }
 }
 
@@ -510,7 +510,7 @@ void oneSecondOver()
   }
   if(ledFlag)
   {
-    set_leds();
+    //set_leds();
     ledFlag = 0;
   }
 }
@@ -525,7 +525,7 @@ void activateTarget(int targetNumber, unsigned char player)
   
   target[targetNumber].player = player;
   ledFlag = 1;
- // set_leds();
+  set_leds();
 }
 
 /*
@@ -614,6 +614,14 @@ void startGame(void)
 void stopGame(void) 
 {
   gameRunning_flag = 0;
+  for(itr = 0; itr < NO_TARGETS; itr++)
+  {
+    target[itr].player = NO_PLAYER; 
+  }
+  set_leds();
+  send_i(LCDCLR);
+  chgline(LINE1);
+  pmsglcd("Player");
 }
 
 /*

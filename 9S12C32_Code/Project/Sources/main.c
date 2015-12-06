@@ -2,6 +2,8 @@
 #include "derivative.h"      /* derivative-specific definitions */
 
 /* Game oriented definitions */
+#define GAMETIME_DATA @Kanishk // TODO
+#define GAMETIME_CLK @Kanishk  // TODO
 #define NO_TARGETS 6
 #define NO_PLAYER 0
 #define PLAYER_A  1
@@ -44,6 +46,7 @@ void pmsglcd(char str[]);
   void outchar(char x); 
 // for RTI initializations
 void startGame(void);
+  void gameTimeClock(void);
   void stopGame(void);
 
 unsigned char gameRunning_flag; // true -> game is running
@@ -458,6 +461,11 @@ void oneSecondOver()
     }
   }
   --gameTime;
+  if(gameTime %6 == 0)
+  {
+    GAMETIME_DATA = 0;
+    gameTimeClock();
+  }
   if(gameTime == 0) 
   {
     PTT_PTT1 = 0;
@@ -515,6 +523,17 @@ void targetInit(Target *myTarget, unsigned char targetMaxScore, int *atd)
   myTarget->atd_address    = atd; 
 }                  
 
+/*
+***********************************************************************
+  gameTimeClock : single clock for shift register for game Time display
+***********************************************************************
+*/
+void gameTimeClock()
+{
+  GAMETIME_CLK = 1;
+  GAMETIME_CLK = 0;
+  GAMETIME_CLK = 1;
+}
 
 /*
 ***********************************************************************
@@ -530,6 +549,14 @@ void startGame(void)
   player_a_allocated = 0;
   player_b_allocated = 0;
   gameTime = 60; // 60 seconds
+  
+  // following is logic to initialize time led's to all ON
+  GAMETIME_DATA = 1;
+  for(itr = 0; itr < 6; ++itr)
+  {
+    gameTimeClock();
+  }
+  GAMETIME_DATA = 0;
 }
 
 /*

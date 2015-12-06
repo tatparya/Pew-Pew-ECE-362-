@@ -323,41 +323,59 @@ void main(void)
           }
       }
 */      
-        if(target[counter_atd].player == PLAYER_A || target[counter_atd].player == PLAYER_B)
+        if(target[0].player == PLAYER_A || target[0].player == PLAYER_B)
         {
   
           if(ATDDR0H > 20) 
           {
-            target[counter_atd].score = 10;
-            targetHit(counter_atd);
-          }
-          if(ATDDR1H > 20) 
-          {
-            target[counter_atd].score = 10;
-            targetHit(counter_atd);
-          }
-          if(ATDDR2H > 20) 
-          {
-            target[counter_atd].score = 10;
-            targetHit(counter_atd);
-          }
-          if(ATDDR3H > 20) 
-          {
-            target[counter_atd].score = 10;
-            targetHit(counter_atd);
-          }
-          if(ATDDR4H > 20) 
-          {
-            target[counter_atd].score = 10;
-            targetHit(counter_atd);
-          }
-          if(ATDDR5H > 20) 
-          {
-            target[counter_atd].score = 10;
-            targetHit(counter_atd);
+            target[0].score = 10;
+            targetHit(0);
           }
         }
-      }
+        
+        if(target[1].player == PLAYER_A || target[1].player == PLAYER_B)
+        {
+          
+          if(ATDDR1H > 20) 
+          {
+            target[1].score = 10;
+            targetHit(1);
+          }
+        }
+        if(target[2].player == PLAYER_A || target[2].player == PLAYER_B)
+        {
+          if(ATDDR2H > 20) 
+          {
+            target[2].score = 10;
+            targetHit(2);
+          }
+        }
+        if(target[3].player == PLAYER_A || target[3].player == PLAYER_B)
+        {
+          if(ATDDR3H > 20) 
+          {
+            target[3].score = 10;
+            targetHit(3);
+          }
+        }
+        if(target[4].player == PLAYER_A || target[4].player == PLAYER_B)
+        {
+          if(ATDDR4H > 20) 
+          {
+            target[4].score = 10;
+            targetHit(4);
+          }
+        }
+        if(target[5].player == PLAYER_A || target[5].player == PLAYER_B)
+        {
+          if(ATDDR5H > 20) 
+          {
+            target[5].score = 10;
+            targetHit(5);
+          }
+        }
+       }
+      
     }
   }
 }

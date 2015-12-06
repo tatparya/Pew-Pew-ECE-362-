@@ -259,66 +259,66 @@ void main(void)
 
         for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
         {
-        // Printing val on lcd
-        valStr[0] = '*';
-        valStr[1] = '*';
-        valStr[2] = '*';
-        maxStr[0] = '*';
-        maxStr[1] = '*';
-        maxStr[2] = '*';
+          // Printing val on lcd
+          valStr[0] = '*';
+          valStr[1] = '*';
+          valStr[2] = '*';
+          maxStr[0] = '*';
+          maxStr[1] = '*';
+          maxStr[2] = '*';
 				  
-        val = ATDDR5H; 
-        tempMax = max;    
-        if( val > max ) 
-        {
-          max = val; 
-        }
-        itr = 2;
-        while( val != 0 ) 
-        {
-          valStr[ itr ] = val % 10 + '0';
-          itr--;
-          val /= 10;
-        }
-        itr = 2;
-        while( tempMax != 0 ) 
-        {
-          maxStr[ itr ] = tempMax % 10 + '0';
-          itr--;
-          tempMax /= 10;
-        }
-        chgline(LINE1);	
-        pmsglcd( "val = " );
-        pmsglcd( valStr );
+          val = ATDDR5H; 
+          tempMax = max;    
+          if( val > max ) 
+          {
+            max = val; 
+          }
+          itr = 2;
+          while( val != 0 ) 
+          {
+            valStr[ itr ] = val % 10 + '0';
+            itr--;
+            val /= 10;
+          }
+          itr = 2;
+          while( tempMax != 0 ) 
+          {
+            maxStr[ itr ] = tempMax % 10 + '0';
+            itr--;
+            tempMax /= 10;
+          }
+          chgline(LINE1);	
+          pmsglcd( "val = " );
+          pmsglcd( valStr );
 
-        if(ATDDR5H > 20)
-        {
-					
-          pmsglcd( "  HIT!! " );
-          PTT_PTT0 = 1;
-        }
+          if(ATDDR5H > 20)
+          {
+            pmsglcd( "  HIT!! " );
+            PTT_PTT0 = 1;
+          }
 
-        chgline(LINE2);
-        pmsglcd( " max = " );
-        pmsglcd( maxStr );
+          chgline(LINE2);
+          pmsglcd( " max = " );
+          pmsglcd( maxStr );
 
-        if(target[counter_atd].player != NO_PLAYER) 
-        {
-          test = ATDDR0H;      ///////////////////////////////////////////////////////
-          test_1 = (test % 10);
-          test_2 = (test/10) %10;
-          test_3 = (test/100) %10;  //////////////////////////////////////////////////
+          if(target[counter_atd].player != NO_PLAYER) 
+          {
+            test = ATDDR0H;      ///////////////////////////////////////////////////////
+            test_1 = (test % 10);
+            test_2 = (test/10) %10;
+            test_3 = (test/100) %10;  //////////////////////////////////////////////////
 
-          outchar('C');
-          outchar(':');
-          outchar(test_3);
-          outchar(test_2);
-          outchar(test_1);
-          outchar(CR);
+            outchar('C');
+            outchar(':');
+            outchar(test_3);
+            outchar(test_2);
+            outchar(test_1);
+            outchar(CR);
 
 
-          target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
-          targetHit(counter_atd);
+            target[counter_atd].score = target[counter_atd].maxScore;
+            targetHit(counter_atd);
+          }
         }
       }
     }
@@ -336,7 +336,6 @@ void main(void)
       Recall that pushbuttons are momentary contact closures to ground
  ***********************************************************************
  */
-
 interrupt 7 void RTI_ISR(void)
 {
   // clear RTI interrupt flag
@@ -368,7 +367,6 @@ interrupt 7 void RTI_ISR(void)
       sets "onesec" flag                                                                                             
  ;***********************************************************************
  */
-
  interrupt 15 void TIM_ISR(void)
  {
              // clear TIM CH 7 interrupt flag

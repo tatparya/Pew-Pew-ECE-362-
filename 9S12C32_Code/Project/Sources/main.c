@@ -1,16 +1,80 @@
+/*
+************************************************************************
+ ECE 362 - Mini-Project C Source File - Fall 2015
+***********************************************************************
+	 	   			 		  			 		  		
+ Team ID: 22
+
+ Project Name: Bang Bang
+
+ Team Members:
+
+   - Team/Doc Leader: Harika Thatukuru       Signature: ______________________
+   
+   - Software Leader: Abhishek Srikanth      Signature: Abhishek
+
+   - Interface Leader: Tatparya Shankar      Signature: ______________________
+
+   - Peripheral Leader: Kanishk Yadav        Signature: Kanishk
+
+
+ Academic Honesty Statement:  In signing above, we hereby certify that we 
+ are the individuals who created this HC(S)12 source file and that we have
+ not copied the work of any other student (past or present) while completing 
+ it. We understand that if we fail to honor this agreement, we will receive 
+ a grade of ZERO and be subject to possible disciplinary action.
+
+***********************************************************************
+
+ The objective of this Mini-Project is to .... < ? >
+
+
+***********************************************************************
+
+ List of project-specific success criteria (functionality that will be
+ demonstrated):
+
+ 1.
+
+ 2.
+
+ 3.
+
+ 4.
+
+ 5.
+
+***********************************************************************
+
+  Date code started: < ? >
+
+  Update history (add an entry every time a significant change is made):
+
+  Date: < ? >  Name: < ? >   Update: < ? >
+
+  Date: < ? >  Name: < ? >   Update: < ? >
+
+  Date: < ? >  Name: < ? >   Update: < ? >
+
+
+***********************************************************************
+*/
+
 #include <hidef.h>      /* common defines and macros */
 #include "derivative.h"      /* derivative-specific definitions */
+#include <mc9s12c32.h>
 
 /* Game oriented definitions */
-#define GAMETIME_DATA @Kanishk // TODO
-#define GAMETIME_CLK @Kanishk  // TODO
+#define GAMETIME_DATA PORTAD0_PTAD6 // TODO @Kanishk
+#define GAMETIME_CLK PORTAD0_PTAD7  // TODO @Kanishk
 #define NO_TARGETS 6
 #define NO_PLAYER 0
 #define PLAYER_A  1
 #define PLAYER_B  2
 
 /* ASCII character definitions */
-#define CR 0x0D	// ASCII return character   
+#define CR 0x0D	// ASCII return character
+#define LF 0x0A	// ASCII something
 
 /* LCD COMMUNICATION BIT MASKS */
 #define RS 0x04		// RS pin mask (PTT[2])
@@ -75,6 +139,8 @@ char test = 0;
 char test_1 = 0;
 char test_2 = 0;
 char test_3 = 0;
+int ledFlag = 0;
+
 
 int val = 0;
 int tempMax = 0;
@@ -256,66 +322,47 @@ void main(void)
         counter++;
         ATDCTL5 = 0x10;     //perform ATD Conversion
         while(ATDSTAT0_SCF != 1){};
-
-        for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
+/*      for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
         {
-          // Printing val on lcd
-          valStr[0] = '*';
-          valStr[1] = '*';
-          valStr[2] = '*';
-          maxStr[0] = '*';
-          maxStr[1] = '*';
-          maxStr[2] = '*';
-				  
-          val = ATDDR5H; 
-          tempMax = max;    
-          if( val > max ) 
-          {
-            max = val; 
-          }
-          itr = 2;
-          while( val != 0 ) 
-          {
-            valStr[ itr ] = val % 10 + '0';
-            itr--;
-            val /= 10;
-          }
-          itr = 2;
-          while( tempMax != 0 ) 
-          {
-            maxStr[ itr ] = tempMax % 10 + '0';
-            itr--;
-            tempMax /= 10;
-          }
-          chgline(LINE1);	
-          pmsglcd( "val = " );
-          pmsglcd( valStr );
-
-          if(ATDDR5H > 20)
-          {
-            pmsglcd( "  HIT!! " );
-            PTT_PTT0 = 1;
-          }
-
-          chgline(LINE2);
-          pmsglcd( " max = " );
-          pmsglcd( maxStr );
-
           if(target[counter_atd].player != NO_PLAYER) 
           {
-            test = ATDDR0H;      ///////////////////////////////////////////////////////
-            test_1 = (test % 10);
-            test_2 = (test/10) %10;
-            test_3 = (test/100) %10;  //////////////////////////////////////////////////
-
-            outchar('C');
-            outchar(':');
-            outchar(test_3);
-            outchar(test_2);
-            outchar(test_1);
-            outchar(CR);
-
-
+            if(*target[counter_atd].atd_address > 255) 
+            {
+              target[counter_atd].score = target[counter_atd].maxScore;
+              targetHit(counter_atd);
+            }
+          }
+      }
+*/      if(target[counter_atd].player == PLAYER_A || target[counter_atd].player == PLAYER_B)
+        {
+  
+          if(ATDDR0H > 20) 
+          {
+            target[counter_atd].score = target[counter_atd].maxScore;
+            targetHit(counter_atd);
+          }
+          if(ATDDR1H > 20) 
+          {
+            target[counter_atd].score = target[counter_atd].maxScore;
+            targetHit(counter_atd);
+          }
+          if(ATDDR2H > 20) 
+          {
+            target[counter_atd].score = target[counter_atd].maxScore;
+            targetHit(counter_atd);
+          }
+          if(ATDDR3H > 20) 
+          {
+            target[counter_atd].score = target[counter_atd].maxScore;
+            targetHit(counter_atd);
+          }
+          if(ATDDR4H > 20) 
+          {
+            target[counter_atd].score = target[counter_atd].maxScore;
+            targetHit(counter_atd);
+          }
+          if(ATDDR5H > 20) 
+          {
             target[counter_atd].score = target[counter_atd].maxScore;
             targetHit(counter_atd);
           }
@@ -394,12 +441,15 @@ void deactivateTarget(int targetNumber)
 {
   
   target[targetNumber].player = NO_PLAYER;
-  if(target[targetNumber].time_as_player < 2) 
-  {
-    target[targetNumber].time_as_player = 2;          //to off the target momentarily when target switches from one player to another
-  } 
+  ledFlag = 1;
+ // if(target[targetNumber].time_as_player < 2) 
+  //{
+   // target[targetNumber].time_as_player = 2;          //to off the target momentarily when target switches from one player to another
+  //} 
   // @Kanishk : set LED display port OFF
-    set_leds();
+ // else{
+  //  set_leds();
+ // }
 }
 
 /*
@@ -435,31 +485,20 @@ void setPlayer(int targetNumber)
 void oneSecondOver() 
 {
   int i;
+  
   for(i = 0; i < NO_TARGETS; ++i)
   {
-    if(target[i].player != NO_PLAYER) 
+    --target[i].time_as_player;
+
+    if(target[i].time_as_player <= 0 || target[i].player == NO_PLAYER)
     {
-      --target[i].time_as_player;
-      if(target[i].time_as_player <= 0) 
-      {    
-        deactivateTarget(i);
-      }             
-    } 
-    else
-    {
-      if(target[i].time_as_player <= 0)
-      {
-        setPlayer(i);
-        target[i].time_as_player = 5; // each target lasts 5 seconds
-      } 
-      else 
-      {
-        --target[i].time_as_player;
-      }      
+      setPlayer(i);
+      target[i].time_as_player = 5; // each target lasts 5 seconds
     }
   }
+  
   --gameTime;
-  if(gameTime %6 == 0)
+  if(gameTime % 10 == 0)
   {
     GAMETIME_DATA = 0;
     gameTimeClock();
@@ -468,6 +507,11 @@ void oneSecondOver()
   {
     PTT_PTT1 = 0;
     stopGame();
+  }
+  if(ledFlag)
+  {
+    set_leds();
+    ledFlag = 0;
   }
 }
 
@@ -480,7 +524,8 @@ void activateTarget(int targetNumber, unsigned char player)
 {
   
   target[targetNumber].player = player;
-  set_leds();
+  ledFlag = 1;
+ // set_leds();
 }
 
 /*
@@ -547,7 +592,10 @@ void startGame(void)
   player_a_allocated = 0;
   player_b_allocated = 0;
   gameTime = 60; // 60 seconds
-  
+  for(itr = 0; itr < NO_TARGETS; ++itr)
+  {
+    setPlayer(itr);
+  }
   // following is logic to initialize time led's to all ON
   GAMETIME_DATA = 1;
   for(itr = 0; itr < 6; ++itr)

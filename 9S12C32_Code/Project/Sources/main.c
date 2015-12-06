@@ -6,10 +6,10 @@
  Team ID: 22
  Project Name: Bang Bang
  Team Members:
-   - Team/Doc Leader: Harika Thatukuru       Signature: ______________________
+   - Team/Doc Leader: Harika Thatukuru       Signature: Harika Thatukuru
    
    - Software Leader: Abhishek Srikanth      Signature: Abhishek
-   - Interface Leader: Tatparya Shankar      Signature: ______________________
+   - Interface Leader: Tatparya Shankar      Signature: Tatparya Shankar
    - Peripheral Leader: Kanishk Yadav        Signature: Kanishk
  Academic Honesty Statement:  In signing above, we hereby certify that we 
  are the individuals who created this HC(S)12 source file and that we have
@@ -17,15 +17,43 @@
  it. We understand that if we fail to honor this agreement, we will receive 
  a grade of ZERO and be subject to possible disciplinary action.
 ***********************************************************************
- The objective of this Mini-Project is to .... < ? >
+ The objective of this Mini-Project is to create a two player shooter 
+ that targets ages 8-80. Nerf guns are used, one per player, to score
+ as much as they can over a time period of a minute by shooting at 
+ allocated targets.
+ The targets are adorned with an extensive matrix of LEDs to define which
+ player must shoot them. The targets detect a hit using very sensitive 
+ piezo-electric vibration sensors. These sensors are converted to digital 
+ values to see if a target is hit.
+ Players are scored per hit and the winner is announced at the end of the game!
+ We hope you enjoy!
 ***********************************************************************
  List of project-specific success criteria (functionality that will be
  demonstrated):
- 1.
- 2.
- 3.
- 4.
- 5.
+ 1. To implement various peripherals on an extensive scale
+   1-a. SPI : 
+     1-a-i.   LCD display for prompts and scores
+     1-a-ii.  Player ownership information via LEDs
+     1-a-iii. Game time matrix vie LEDs
+   1-b. RTI : To detect events on pushbuttons used for critical operations
+   1-c. TIM : To sample a plethora of targets to detect hits
+   1-d. ATD : To measure vibration values and evaluate a hit out of them
+ 2. To demonstrate successful programming on the microcontroller
+   2-a. To start the game on an event and run it for precisely a minute
+   2-b. To manage scores of both players for final results
+   2-c. To psedo-randomly allocate targets to users ensuring fair distribution
+   2-d. To manage all information in a concise and efficient manner using data structures
+   2-e. To modularly divide the program into bit-size pieces with easy modifications (Code Scalability)
+   2-f. To ensure industry standards are implemented in program
+ 3. To demonstrate understanding of circuit wiring
+   3-a. To create a complex led matrix used to display target allocations and time
+   3-b. To connect all interfacing components together to form a coherent circuit
+ 4. To work in a real life engineering team and gain valuable teaming experience
+   4-a. To foster everlasting relationships with team-mates
+   4-b. To obtain an over-arching and comprehensive understanding of all underlying concepts relevant to the coursework
+ 5. To create a complete and wholesome gaming experience for the audience
+   5-a. Ensure the game is functional and majorly error free
+   5-b. Make game challenging, yet not impossible
 ***********************************************************************
   Date code started: < ? >
   Update history (add an entry every time a significant change is made):

@@ -191,144 +191,137 @@ void initializations()
 
 void main(void) 
 {
-	DisableInterrupts
-	initializations();
-	EnableInterrupts;
+  DisableInterrupts
+  initializations();
+  EnableInterrupts;
 	
-	//  Clear screen
-	send_i(LCDCLR);
-	//  Change Line
-	chgline(LINE1);
+  //  Clear screen
+  send_i(LCDCLR);
+  //  Change Line
+  chgline(LINE1);
 
-	pmsglcd( "Hello World!!" );
+  pmsglcd( "Hello World!!" );
 	
-	for(;;) 
-	{
+  for(;;) 
+  {
+    //_FEED_COP(); // feeds the dog 
+    // TODO (for watchdog timer @Kanishk) 
+    if(leftpb)           //PUSH left push button to start the game
+    {
+      leftpb = 0;
+      //  Clear screen
+      send_i(LCDCLR);
+      //  Change Line
+      chgline(LINE1);
+      pmsglcd("Game running");
+      send_i(LCDCLR);
+      max = 0;
 
+      counter = 0;
+      outchar('C');
+      PTT_PTT1 = 1;//Light up the LED  (to check if push button is working)
+      startGame();   //GAME STARTS
+    }
     
-		//_FEED_COP(); // feeds the dog 
-		// TODO (for watchdog timer @Kanishk) 
+    if( rghtpb )
+    {      
+      rghtpb = 0;
 
-		if(leftpb)           //PUSH left push button to start the game
-		{
-			leftpb = 0;
-			//  Clear screen
-			send_i(LCDCLR);
-			//  Change Line
-			chgline(LINE1);
-			pmsglcd("Game running");
-			send_i(LCDCLR);
-			max = 0;
+      //  Clear screen
+      send_i(LCDCLR);
+      //  Change Line
+      chgline(LINE1);
+      pmsglcd("Game reset");
 
-			counter = 0;
-			outchar('C');
-			PTT_PTT1 = 1;//Light up the LED  (to check if push button is working)
-			startGame();   //GAME STARTS
-		}
+      PTT_PTT0 = 0;
+      PTT_PTT1 = 0;    
+      gameRunning_flag = 0;
+    }
     
-		if( rghtpb )
-		{      
-			rghtpb = 0;
+    if(gameRunning_flag != 0) 
+    {
+      if(tenths) 
+      {
+        tenths = 0;   
+        //PTT_PTT0 = 0;////////////////////////////////////////////////////
+        if(counter == 100) 
+        {
+          // PTT_PTT0 = 1;  //////////////////////////////////////
+          oneSecondOver();
+          counter = 0;
+        }       
+        counter++;
+        ATDCTL5 = 0x10;     //perform ATD Conversion
+        while(ATDSTAT0_SCF != 1){};
 
-			//  Clear screen
-			send_i(LCDCLR);
-			//  Change Line
-			chgline(LINE1);
-			pmsglcd("Game reset");
-
-			PTT_PTT0 = 0;
-			PTT_PTT1 = 0;    
-			gameRunning_flag = 0;
-		}
-    
-		if(gameRunning_flag != 0) 
-		{
-			if(tenths) 
-			{
-				tenths = 0;   
-				//PTT_PTT0 = 0;////////////////////////////////////////////////////
-				if(counter == 100) 
-				{
-				// PTT_PTT0 = 1;  //////////////////////////////////////
-				oneSecondOver();
-				counter = 0;
-				}       
-				counter++;
-				ATDCTL5 = 0x10;     //perform ATD Conversion
-				while(ATDSTAT0_SCF != 1){};
-
-				for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
-				{
-				  // Printing val on lcd
-				  valStr[0] = '*';
-				  valStr[1] = '*';
-				  valStr[2] = '*';
-				  maxStr[0] = '*';
-				  maxStr[1] = '*';
-				  maxStr[2] = '*';
+        for(counter_atd = 0; counter_atd < NO_TARGETS; counter_atd++) 
+        {
+        // Printing val on lcd
+        valStr[0] = '*';
+        valStr[1] = '*';
+        valStr[2] = '*';
+        maxStr[0] = '*';
+        maxStr[1] = '*';
+        maxStr[2] = '*';
 				  
-        	val = ATDDR5H; 
-        	tempMax = max;    
-        	if( val > max ) {
-        	  max = val; 
-        	}
-					itr = 2;
-					while( val != 0 ) 
-					{
+        val = ATDDR5H; 
+        tempMax = max;    
+        if( val > max ) 
+        {
+          max = val; 
+        }
+        itr = 2;
+        while( val != 0 ) 
+        {
+          valStr[ itr ] = val % 10 + '0';
+          itr--;
+          val /= 10;
+        }
+        itr = 2;
+        while( tempMax != 0 ) 
+        {
+          maxStr[ itr ] = tempMax % 10 + '0';
+          itr--;
+          tempMax /= 10;
+        }
+        chgline(LINE1);	
+        pmsglcd( "val = " );
+        pmsglcd( valStr );
 
-						valStr[ itr ] = val % 10 + '0';
-						itr--;
-						val /= 10;
-						
-					}
-					itr = 2;
-					while( tempMax != 0 ) 
-					{
-
-						maxStr[ itr ] = tempMax % 10 + '0';
-						itr--;
-						tempMax /= 10;
-
-					}
-				  
-			    chgline(LINE1);	
-					pmsglcd( "val = " );
-					pmsglcd( valStr );
+        if(ATDDR5H > 20)
+        {
 					
-					if(ATDDR5H > 20)
-					{
-					
-					  pmsglcd( "  HIT!! " );
-						PTT_PTT0 = 1;
-					}
+          pmsglcd( "  HIT!! " );
+          PTT_PTT0 = 1;
+        }
 
-		    	chgline(LINE2);
-					pmsglcd( " max = " );
-					pmsglcd( maxStr );
+        chgline(LINE2);
+        pmsglcd( " max = " );
+        pmsglcd( maxStr );
 
-					if(target[counter_atd].player != NO_PLAYER) 
-					{
-						test = ATDDR0H;      ///////////////////////////////////////////////////////
-						test_1 = (test % 10);
-						test_2 = (test/10) %10;
-						test_3 = (test/100) %10;  //////////////////////////////////////////////////
+        if(target[counter_atd].player != NO_PLAYER) 
+        {
+          test = ATDDR0H;      ///////////////////////////////////////////////////////
+          test_1 = (test % 10);
+          test_2 = (test/10) %10;
+          test_3 = (test/100) %10;  //////////////////////////////////////////////////
 
-						outchar('C');
-						outchar(':');
-						outchar(test_3);
-						outchar(test_2);
-						outchar(test_1);
-						outchar(CR);
+          outchar('C');
+          outchar(':');
+          outchar(test_3);
+          outchar(test_2);
+          outchar(test_1);
+          outchar(CR);
 
 
-						target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
-						targetHit(counter_atd);
-					}
-				}
-			}
-		}
-	}
+          target[counter_atd].score = (target[counter_atd].maxScore *(*(target[counter_atd].atd_address)))/255;
+          targetHit(counter_atd);
+        }
+      }
+    }
+  }
 }
+
 
  /*
  ***********************************************************************
@@ -342,25 +335,23 @@ void main(void)
  */
 
 interrupt 7 void RTI_ISR(void)
- {
-            // clear RTI interrupt flag
-           CRGFLG = CRGFLG | 0x80;
-           
-          
-       if(PORTAD0_PTAD6 == 0 && prevrght == 1){
-         rghtpb = 1;
-        
-       }
+{
+  // clear RTI interrupt flag
+  CRGFLG = CRGFLG | 0x80;
+  if(PORTAD0_PTAD6 == 0 && prevrght == 1)
+  {
+  	rghtpb = 1;
+  }
       
-       if(PORTAD0_PTAD7 == 0 && prevleft == 1){
-         leftpb = 1;
-        //  PTT_PTT0 = 1; //PORT 0
-         //  PTT_PTT1 = 1;
-        
-       }
+  if(PORTAD0_PTAD7 == 0 && prevleft == 1)
+  {
+    leftpb = 1;
+    //  PTT_PTT0 = 1; //PORT 0
+    //  PTT_PTT1 = 1;
+  }
       
-       prevleft = PORTAD0_PTAD7;
-       prevrght = PORTAD0_PTAD6;
+  prevleft = PORTAD0_PTAD7;
+  prevrght = PORTAD0_PTAD6;
 
  }
  

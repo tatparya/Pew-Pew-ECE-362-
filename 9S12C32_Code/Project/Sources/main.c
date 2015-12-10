@@ -19,7 +19,6 @@
  a grade of ZERO and be subject to possible disciplinary action.
  
 ***********************************************************************
-
  The objective of this Mini-Project is to create a two player shooter 
  that targets ages 8-80. Nerf guns are used, one per player, to score
  as much as they can over a time period of a minute by shooting at 
@@ -30,9 +29,7 @@
  values to see if a target is hit.
  Players are scored per hit and the winner is announced at the end of the game!
  We hope you enjoy!
-
 ***********************************************************************
-
  List of project-specific success criteria (functionality that will be
  demonstrated):
  1. To implement various peripherals on an extensive scale
@@ -59,9 +56,7 @@
  5. To create a complete and wholesome gaming experience for the audience
    5-a. Ensure the game is functional and majorly error free
    5-b. Make game challenging, yet not impossible
-
 ***********************************************************************
-
   Date code started: November 22, 2015
   Update history (add an entry every time a significant change is made):
   Date: Dec  9 Name: Yadav9   Update: Added push button functionality
@@ -81,7 +76,6 @@
   Date: Nov 22 Name: srikanth Update: First Commit
   // above is a listing of all major commits
   // All commits may be viewed at "https://github.com/tatparya/PewPew_ECE362/commits/master"
-
 ***********************************************************************
 */
 
@@ -211,7 +205,7 @@ void initializations()
 
  /* Initialize digital I/O port pins */
     DDRAD = 0x00;
-    DDRT = 0x7F;
+    DDRT = 0xFF;
     DDRM_DDRM3 = 1; //Initializing registers for LCD module
     DDRM_DDRM4 = 1;
     DDRM_DDRM5 = 1;
@@ -422,14 +416,14 @@ interrupt 7 void RTI_ISR(void)
   	rghtpb = 1;
   }
       
-  if(PTT_PTT7 == 0 && prevleft == 1)
+  if(PORTAD0_PTAD7  == 0 && prevleft == 1)
   {
     leftpb = 1;
     //  PTT_PTT0 = 1; //PORT 0
     //  PTT_PTT1 = 1;
   }
       
-  prevleft = PTT_PTT7;
+  prevleft = PORTAD0_PTAD7 ;
   prevrght = PORTAD0_PTAD6;
 
  }

@@ -5,18 +5,21 @@
 	 	   			 		  			 		  		
  Team ID: 22
  Project Name: Bang Bang
+ 
  Team Members:
    - Team/Doc Leader: Harika Thatukuru       Signature: Harika Thatukuru
-   
    - Software Leader: Abhishek Srikanth      Signature: Abhishek
    - Interface Leader: Tatparya Shankar      Signature: Tatparya Shankar
    - Peripheral Leader: Kanishk Yadav        Signature: Kanishk
+ 
  Academic Honesty Statement:  In signing above, we hereby certify that we 
  are the individuals who created this HC(S)12 source file and that we have
  not copied the work of any other student (past or present) while completing 
  it. We understand that if we fail to honor this agreement, we will receive 
  a grade of ZERO and be subject to possible disciplinary action.
+ 
 ***********************************************************************
+
  The objective of this Mini-Project is to create a two player shooter 
  that targets ages 8-80. Nerf guns are used, one per player, to score
  as much as they can over a time period of a minute by shooting at 
@@ -27,7 +30,9 @@
  values to see if a target is hit.
  Players are scored per hit and the winner is announced at the end of the game!
  We hope you enjoy!
+
 ***********************************************************************
+
  List of project-specific success criteria (functionality that will be
  demonstrated):
  1. To implement various peripherals on an extensive scale
@@ -54,12 +59,29 @@
  5. To create a complete and wholesome gaming experience for the audience
    5-a. Ensure the game is functional and majorly error free
    5-b. Make game challenging, yet not impossible
+
 ***********************************************************************
-  Date code started: < ? >
+
+  Date code started: November 22, 2015
   Update history (add an entry every time a significant change is made):
-  Date: < ? >  Name: < ? >   Update: < ? >
-  Date: < ? >  Name: < ? >   Update: < ? >
-  Date: < ? >  Name: < ? >   Update: < ? >
+  Date: Dec  9 Name: Yadav9   Update: Added push button functionality
+  Date: Dec  6 Name: Yadav9   Update: ATD condition fix
+  Date: Dec  6 Name: srikanth Update: Game LCD Updates set
+  Date: Dec  5 Name: srikanth Update: Game-time display code added
+  Date: Nov 25 Name: Yadav9   Update: Added function to display target LED
+  Date: Nov 25 Name: Yadav9   Update: Added RTI module and TIM module
+  Date: Nov 24 Name: Yadav9   Update: Added Module and port initialization()
+  Date: Nov 23 Name: srikanth Update: Added function for assigning target to player
+  Date: Nov 23 Name: srikanth Update: Added function to be called every  second. Used to update ALL game variables
+  Date: Nov 23 Name: srikanth Update: Added function to startGame() and to endGame()
+  Date: Nov 23 Name: srikanth Update: Added function to activateTarget() and deactivateTarget()
+  Date: Nov 23 Name: srikanth Update: Added function to be called when targetHit()
+  Date: Nov 22 Name: srikanth Update: Created LCD functions and basic initialization() block
+  Date: Nov 22 Name: srikanth Update: Created "struct TargetData"used to define each target
+  Date: Nov 22 Name: srikanth Update: First Commit
+  // above is a listing of all major commits
+  // All commits may be viewed at "https://github.com/tatparya/PewPew_ECE362/commits/master"
+
 ***********************************************************************
 */
 

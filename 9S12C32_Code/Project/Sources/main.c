@@ -189,7 +189,7 @@ void initializations()
 
  /* Initialize digital I/O port pins */
     DDRAD = 0x00;
-    DDRT = 0xFF;
+    DDRT = 0x7F;
     DDRM_DDRM3 = 1; //Initializing registers for LCD module
     DDRM_DDRM4 = 1;
     DDRM_DDRM5 = 1;
@@ -400,14 +400,14 @@ interrupt 7 void RTI_ISR(void)
   	rghtpb = 1;
   }
       
-  if(PORTAD0_PTAD7 == 0 && prevleft == 1)
+  if(PTT_PTT7 == 0 && prevleft == 1)
   {
     leftpb = 1;
     //  PTT_PTT0 = 1; //PORT 0
     //  PTT_PTT1 = 1;
   }
       
-  prevleft = PORTAD0_PTAD7;
+  prevleft = PTT_PTT7;
   prevrght = PORTAD0_PTAD6;
 
  }

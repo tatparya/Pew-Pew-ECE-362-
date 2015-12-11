@@ -90,6 +90,7 @@
 #define NO_PLAYER 0
 #define PLAYER_A  1
 #define PLAYER_B  2
+#define THRESH 75
 
 /* ASCII character definitions */
 #define CR 0x0D	// ASCII return character
@@ -342,7 +343,7 @@ void main(void)
         if(target[0].player == PLAYER_A || target[0].player == PLAYER_B)
         {
   
-          if(ATDDR0H > 20) 
+          if(ATDDR0H > THRESH) 
           {
             target[0].score = 10;
             targetHit(0);
@@ -352,7 +353,7 @@ void main(void)
         if(target[1].player == PLAYER_A || target[1].player == PLAYER_B)
         {
           
-          if(ATDDR1H > 20) 
+          if(ATDDR1H > THRESH) 
           {
             target[1].score = 10;
             targetHit(1);
@@ -360,7 +361,7 @@ void main(void)
         }
         if(target[2].player == PLAYER_A || target[2].player == PLAYER_B)
         {
-          if(ATDDR2H > 20) 
+          if(ATDDR2H > THRESH) 
           {
             target[2].score = 10;
             targetHit(2);
@@ -368,7 +369,7 @@ void main(void)
         }
         if(target[3].player == PLAYER_A || target[3].player == PLAYER_B)
         {
-          if(ATDDR3H > 20) 
+          if(ATDDR3H > THRESH) 
           {
             target[3].score = 10;
             targetHit(3);
@@ -376,7 +377,7 @@ void main(void)
         }
         if(target[4].player == PLAYER_A || target[4].player == PLAYER_B)
         {
-          if(ATDDR4H > 20) 
+          if(ATDDR4H > THRESH) 
           {
             target[4].score = 10;
             targetHit(4);
@@ -384,7 +385,7 @@ void main(void)
         }
         if(target[5].player == PLAYER_A || target[5].player == PLAYER_B)
         {
-          if(ATDDR5H > 20) 
+          if(ATDDR5H > THRESH) 
           {
             target[5].score = 10;
             targetHit(5);
@@ -626,8 +627,19 @@ void stopGame(void)
 {
   gameRunning_flag = 0;
   for(itr = 0; itr < NO_TARGETS; itr++)
-  {
-    target[itr].player = NO_PLAYER; 
+  {    
+    if(player_a_score > player_b_score) 
+    {
+      target[itr].player = PLAYER_A;
+    }
+    else if(player_a_score == player_b_score)
+    {
+      target[itr].player = NO_PLAYER;
+    }
+    else   
+    {   
+      target[itr].player = PLAYER_B;
+    }
   }
   set_leds();
   send_i(LCDCLR);
